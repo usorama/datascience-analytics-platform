@@ -1,0 +1,26 @@
+# Azure DevOps Analytics Module Requirements
+# Install with: pip install -r requirements-ado.txt
+
+# Configuration UI
+streamlit>=1.25.0
+
+# AHP calculations (removed ahpy as we implemented our own)
+# ahpy>=0.3.0  # Not needed - we have our own implementation
+
+# Graph analysis for dependency tracking
+networkx>=2.8
+
+# Data simulation
+faker>=19.0.0
+
+# Mathematical operations (already in base requirements but ensure version)
+scipy>=1.9.0
+
+# Visualization enhancements
+plotly>=5.14.0
+
+# Additional data processing
+openpyxl>=3.1.0  # For Excel export support
+
+# Semantic analysis and NLP
+sentence-transformers>=2.2.0  # For semantic embeddings (optional - has mock fallback)
