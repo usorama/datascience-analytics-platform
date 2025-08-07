@@ -1,92 +1,93 @@
-"""Setup script for DataScience Analytics Platform Dashboard Generator"""
+#!/usr/bin/env python
+"""
+DataScience Platform - ML-Powered Analytics with NLP Enhancement
+
+A comprehensive platform for data analysis, ML optimization, and dashboard generation.
+"""
 
 from setuptools import setup, find_packages
-from pathlib import Path
 
-# Read README file
-readme_path = Path(__file__).parent / "README.md"
-long_description = readme_path.read_text(encoding="utf-8") if readme_path.exists() else ""
-
-# Read requirements
-requirements_path = Path(__file__).parent / "requirements.txt"
-if requirements_path.exists():
-    with open(requirements_path, "r", encoding="utf-8") as f:
-        requirements = [
-            line.strip() 
-            for line in f 
-            if line.strip() and not line.startswith("#")
-        ]
-else:
-    requirements = [
-        "pandas>=2.0.0",
-        "numpy>=1.24.0",
-        "plotly>=5.15.0",
-        "jinja2>=3.1.0",
-    ]
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
 
 setup(
-    name="datascience-dashboard-generator",
-    version="1.0.0",
+    name="datascience-platform",
+    version="2.0.0",
     author="DataScience Platform Team",
-    author_email="team@datascienceplatform.com",
-    description="Interactive HTML/JS/CSS dashboard generator for data science analytics",
+    author_email="team@dsplatform.ai",
+    description="ML-powered analytics platform with NLP enhancement and auto-dashboards",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/datascienceplatform/dashboard-generator",
-    packages=find_packages(where="src"),
-    package_dir={"": "src"},
-    package_data={
-        "datascience_platform.dashboard": [
-            "templates/*.html",
-            "templates/components/*.html",
-            "static/*.css",
-            "static/*.js",
-        ]
+    url="https://github.com/yourusername/ds-package",
+    project_urls={
+        "Bug Tracker": "https://github.com/yourusername/ds-package/issues",
+        "Documentation": "https://github.com/yourusername/ds-package/wiki",
     },
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
-        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-        "Topic :: Scientific/Engineering :: Visualization",
-        "Topic :: Software Development :: Libraries :: Python Modules",
     ],
+    package_dir={"": "src"},
+    packages=find_packages(where="src"),
     python_requires=">=3.8",
-    install_requires=requirements,
+    install_requires=[
+        # Core dependencies
+        "pandas>=1.5.0",
+        "numpy>=1.21.0",
+        "scikit-learn>=1.0.0",
+        "pydantic>=2.0.0",
+        
+        # NLP dependencies (optional but recommended)
+        "sentence-transformers>=2.2.0",
+        "torch>=2.0.0",
+        
+        # Dashboard dependencies
+        "jinja2>=3.0.0",
+        
+        # Optional but recommended
+        "faiss-cpu>=1.7.4",
+        "plotly>=5.0.0",
+        "streamlit>=1.20.0",
+    ],
     extras_require={
         "dev": [
             "pytest>=7.0.0",
             "pytest-cov>=4.0.0",
-            "black>=23.0.0",
-            "flake8>=6.0.0",
-            "mypy>=1.0.0",
+            "black>=22.0.0",
+            "flake8>=4.0.0",
         ],
-        "docs": [
-            "sphinx>=7.0.0",
-            "sphinx-rtd-theme>=1.3.0",
+        "gpu": [
+            "torch>=2.0.0",
+            "faiss-gpu>=1.7.4",
         ],
-        "ml": [
-            "scipy>=1.10.0",
-            "scikit-learn>=1.3.0",
-            "seaborn>=0.12.0",
+        "full": [
+            "sentence-transformers>=2.2.0",
+            "transformers>=4.30.0",
+            "faiss-cpu>=1.7.4",
+            "optuna>=3.0.0",
+            "shap>=0.40.0",
+            "mlflow>=2.0.0",
         ],
     },
     entry_points={
         "console_scripts": [
-            "ds-dashboard=datascience_platform.dashboard.cli:main",
+            "dsplatform=datascience_platform.cli.commands:main",
+            "ds-analyze=datascience_platform.cli.commands:analyze",
+            "ds-dashboard=datascience_platform.cli.commands:dashboard",
         ],
     },
-    keywords="dashboard, data visualization, plotly, interactive, html, analytics",
-    project_urls={
-        "Bug Reports": "https://github.com/datascienceplatform/dashboard-generator/issues",
-        "Source": "https://github.com/datascienceplatform/dashboard-generator",
-        "Documentation": "https://dashboard-generator.readthedocs.io/",
+    include_package_data=True,
+    package_data={
+        "datascience_platform": [
+            "dashboard/templates/*.html",
+            "dashboard/static/*",
+        ],
     },
 )
