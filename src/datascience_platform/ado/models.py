@@ -7,7 +7,7 @@ hierarchical relationships and business value normalization.
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional, Dict, Any, Union, Literal
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, ConfigDict
 import numpy as np
 
 
@@ -35,6 +35,8 @@ class WorkItemState(str, Enum):
 
 class TeamMetrics(BaseModel):
     """Team-specific metrics for a work item."""
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    
     team_name: str
     velocity: Optional[float] = Field(None, description="Team velocity in story points per PI")
     capacity: Optional[float] = Field(None, description="Team capacity for current PI")
@@ -43,6 +45,10 @@ class TeamMetrics(BaseModel):
     
 class ADOWorkItem(BaseModel):
     """Base model for Azure DevOps work items."""
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        json_encoders={datetime: lambda v: v.isoformat() if v else None}
+    )
     
     # Core fields
     work_item_id: int = Field(..., description="Unique ADO work item ID")
@@ -129,11 +135,6 @@ class ADOWorkItem(BaseModel):
     def is_active(self) -> bool:
         """Check if work item is active."""
         return self.state in [WorkItemState.ACTIVE, WorkItemState.IN_PROGRESS]
-    
-    class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat() if v else None
-        }
 
 
 class Epic(ADOWorkItem):

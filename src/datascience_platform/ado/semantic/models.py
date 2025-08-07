@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import List, Optional, Dict, Any, Tuple
 from enum import Enum
 import numpy as np
+from pydantic import Field
 
 from ..models import ADOWorkItem
 
@@ -205,7 +206,6 @@ class AlignmentScore:
         }
 
 
-@dataclass
 class SemanticWorkItem(ADOWorkItem):
     """Work item enhanced with semantic information."""
     # Text content
@@ -221,18 +221,18 @@ class SemanticWorkItem(ADOWorkItem):
     combined_embedding: Optional[np.ndarray] = None
     
     # Extracted information
-    strategic_themes: List[str] = field(default_factory=list)
-    mentioned_metrics: List[str] = field(default_factory=list)
-    identified_dependencies: List[str] = field(default_factory=list)
+    strategic_themes: List[str] = Field(default_factory=list)
+    mentioned_metrics: List[str] = Field(default_factory=list)
+    identified_dependencies: List[str] = Field(default_factory=list)
     
     # Alignment results
     alignment_score: Optional[AlignmentScore] = None
-    aligned_okrs: List[Tuple[str, float]] = field(default_factory=list)  # (okr_id, score)
-    aligned_strategies: List[Tuple[str, float]] = field(default_factory=list)  # (doc_id, score)
+    aligned_okrs: List[Tuple[str, float]] = Field(default_factory=list)  # (okr_id, score)
+    aligned_strategies: List[Tuple[str, float]] = Field(default_factory=list)  # (doc_id, score)
     
     # Semantic relationships
-    semantic_similar_items: List[Tuple[str, float]] = field(default_factory=list)  # (item_id, similarity)
-    semantic_dependencies: List[Dict[str, Any]] = field(default_factory=list)
+    semantic_similar_items: List[Tuple[str, float]] = Field(default_factory=list)  # (item_id, similarity)
+    semantic_dependencies: List[Dict[str, Any]] = Field(default_factory=list)
     
     def get_text_for_embedding(self) -> str:
         """Combine all text fields for embedding generation."""

@@ -29,6 +29,11 @@ from .metrics import (
 )
 from .simulation import ADODataSimulator
 from .analyzer import ADOAnalyzer
+from .data_validator import (
+    RobustDataProcessor,
+    FilterableDataProcessor,
+    DataValidationError
+)
 
 __all__ = [
     'ADOWorkItem',
@@ -48,7 +53,10 @@ __all__ = [
     'TeamMetrics',
     'FlowMetrics',
     'ADODataSimulator',
-    'ADOAnalyzer'
+    'ADOAnalyzer',
+    'RobustDataProcessor',
+    'FilterableDataProcessor',
+    'DataValidationError'
 ]
 
 __version__ = "1.0.0"

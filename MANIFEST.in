@@ -1,0 +1,7 @@
+include README.md
+include LICENSE
+include requirements*.txt
+recursive-include src/datascience_platform/dashboard/templates *.html
+recursive-include src/datascience_platform/dashboard/static *
+recursive-include docs *.md
+recursive-include examples *.py

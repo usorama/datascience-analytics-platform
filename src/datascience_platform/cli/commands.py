@@ -444,5 +444,52 @@ def info() -> None:
         click.echo(f"    {', '.join(schemas)}")
 
 
+# Entry point functions for console scripts
+def main():
+    """Main entry point for dsplatform command."""
+    cli()
+
+def analyze():
+    """Entry point for ds-analyze command - direct to data read."""
+    import sys
+    # Add 'data read' to the arguments if not present
+    if len(sys.argv) == 1:
+        sys.argv.extend(['data', 'read', '--help'])
+    elif 'data' not in sys.argv:
+        sys.argv.insert(1, 'data')
+        if 'read' not in sys.argv:
+            sys.argv.insert(2, 'read')
+    cli()
+
+def dashboard():
+    """Entry point for ds-dashboard command."""
+    import sys
+    from datascience_platform.dashboard.generative import DashboardGenerator
+    
+    if len(sys.argv) < 2:
+        click.echo("Usage: ds-dashboard <data_file> [options]")
+        click.echo("Generate an interactive dashboard from data")
+        return
+    
+    try:
+        data_file = sys.argv[1]
+        output_dir = sys.argv[2] if len(sys.argv) > 2 else "generated_dashboard"
+        
+        # Read data
+        reader = DataReader()
+        df = reader.read(data_file)
+        
+        # Generate dashboard
+        generator = DashboardGenerator()
+        success, path = generator.generate_dashboard(df, {}, None)
+        
+        if success:
+            click.echo(f"✅ Dashboard generated successfully at: {path}")
+        else:
+            click.echo("❌ Dashboard generation failed")
+    
+    except Exception as e:
+        click.echo(f"❌ Error: {str(e)}")
+
 if __name__ == "__main__":
     cli()

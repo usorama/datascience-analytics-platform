@@ -1,20 +1,29 @@
 """Semantic Embedding Module
 
 This module handles the generation and caching of semantic embeddings
-for business text using transformer models.
+for business text using transformer models. Now uses the enhanced NLP
+implementation for production-ready capabilities.
 """
 
 import hashlib
 import json
 import pickle
 from pathlib import Path
-from typing import List, Dict, Optional, Union, Tuple
+from typing import List, Dict, Optional, Union, Tuple, Any
 import numpy as np
 from datetime import datetime, timedelta
 import logging
 
-# Note: In production, you would use sentence-transformers
-# For now, we'll create a mock implementation that demonstrates the concept
+# Import enhanced NLP components
+try:
+    from ...nlp.core.embedder import SemanticEmbedder as EnhancedSemanticEmbedder
+    from ...nlp.domain.model_selector import DomainModelSelector
+    ENHANCED_NLP_AVAILABLE = True
+except ImportError:
+    ENHANCED_NLP_AVAILABLE = False
+    logging.getLogger(__name__).warning("Enhanced NLP modules not available, using legacy implementation")
+
+# Fallback imports
 try:
     from sentence_transformers import SentenceTransformer
     SENTENCE_TRANSFORMERS_AVAILABLE = True
@@ -122,13 +131,14 @@ class MockSentenceTransformer:
 
 
 class SemanticEmbedder:
-    """Generate semantic embeddings for business text."""
+    """Generate semantic embeddings for business text with enhanced capabilities."""
     
     def __init__(
         self,
         model_name: str = "sentence-transformers/all-mpnet-base-v2",
         use_cache: bool = True,
-        cache_dir: Optional[Path] = None
+        cache_dir: Optional[Path] = None,
+        use_domain_selection: bool = True
     ):
         """Initialize embedder with specified model.
         
@@ -136,84 +146,140 @@ class SemanticEmbedder:
             model_name: Name of the sentence transformer model
             use_cache: Whether to use embedding cache
             cache_dir: Directory for cache storage
+            use_domain_selection: Whether to use domain-specific model selection
         """
         self.model_name = model_name
         self.use_cache = use_cache
+        self.use_domain_selection = use_domain_selection
         
-        if use_cache:
-            self.cache = EmbeddingCache(cache_dir)
+        # Initialize enhanced embedder if available
+        if ENHANCED_NLP_AVAILABLE:
+            self.enhanced_embedder = EnhancedSemanticEmbedder(
+                model_name=model_name,
+                use_cache=use_cache,
+                cache_dir=cache_dir
+            )
+            
+            # Initialize domain model selector if requested
+            if use_domain_selection:
+                self.domain_selector = DomainModelSelector(cache_dir=cache_dir)
+            else:
+                self.domain_selector = None
+                
+            self.model = self.enhanced_embedder.model
         else:
-            self.cache = None
-        
-        # Load model
-        if SENTENCE_TRANSFORMERS_AVAILABLE:
-            self.model = SentenceTransformer(model_name)
-        else:
-            self.model = MockSentenceTransformer(model_name)
+            # Fallback to legacy implementation
+            if use_cache:
+                self.cache = EmbeddingCache(cache_dir)
+            else:
+                self.cache = None
+            
+            # Load model
+            if SENTENCE_TRANSFORMERS_AVAILABLE:
+                self.model = SentenceTransformer(model_name)
+            else:
+                self.model = MockSentenceTransformer(model_name)
+            
+            self.enhanced_embedder = None
+            self.domain_selector = None
     
-    def embed_text(self, text: str) -> np.ndarray:
-        """Generate embedding for a single text."""
+    def embed_text(self, text: str, document_type: Optional[str] = None) -> np.ndarray:
+        """Generate embedding for a single text with optional domain-specific model selection.
+        
+        Args:
+            text: Input text to embed
+            document_type: Optional document type for domain model selection
+            
+        Returns:
+            Embedding vector
+        """
         if not text:
             return np.zeros(768)  # Return zero vector for empty text
         
-        # Check cache
-        if self.cache:
-            cached = self.cache.get(text, self.model_name)
-            if cached is not None:
-                return cached
-        
-        # Generate embedding
-        embedding = self.model.encode(text, convert_to_numpy=True)
-        
-        # Store in cache
-        if self.cache:
-            self.cache.set(text, self.model_name, embedding)
-        
-        return embedding
+        # Use enhanced embedder if available
+        if self.enhanced_embedder:
+            # Check if we should use domain-specific model selection
+            if self.domain_selector and document_type:
+                try:
+                    model_name, domain, metadata = self.domain_selector.select_model(
+                        text, document_type
+                    )
+                    
+                    # If different model selected, use it
+                    if model_name != self.model_name:
+                        domain_model = self.domain_selector.load_model(model_name, domain)
+                        if hasattr(domain_model, 'encode'):
+                            embedding = domain_model.encode(text, convert_to_numpy=True)
+                            return embedding[0] if len(embedding.shape) > 1 else embedding
+                except Exception as e:
+                    logging.getLogger(__name__).warning(f"Domain selection failed: {e}, falling back to default model")
+            
+            return self.enhanced_embedder.embed_text(text)
+        else:
+            # Legacy implementation
+            # Check cache
+            if self.cache:
+                cached = self.cache.get(text, self.model_name)
+                if cached is not None:
+                    return cached
+            
+            # Generate embedding
+            embedding = self.model.encode(text, convert_to_numpy=True)
+            
+            # Store in cache
+            if self.cache:
+                self.cache.set(text, self.model_name, embedding)
+            
+            return embedding
     
     def embed_texts(self, texts: List[str], batch_size: int = 32) -> np.ndarray:
         """Generate embeddings for multiple texts efficiently."""
         if not texts:
             return np.array([])
         
-        embeddings = []
-        uncached_texts = []
-        uncached_indices = []
-        
-        # Check cache for each text
-        if self.cache:
-            for i, text in enumerate(texts):
-                cached = self.cache.get(text, self.model_name)
-                if cached is not None:
-                    embeddings.append((i, cached))
-                else:
-                    uncached_texts.append(text)
-                    uncached_indices.append(i)
+        # Use enhanced embedder if available
+        if self.enhanced_embedder:
+            return self.enhanced_embedder.embed_texts(texts, batch_size)
         else:
-            uncached_texts = texts
-            uncached_indices = list(range(len(texts)))
-        
-        # Generate embeddings for uncached texts
-        if uncached_texts:
-            new_embeddings = self.model.encode(
-                uncached_texts,
-                batch_size=batch_size,
-                convert_to_numpy=True,
-                show_progress_bar=len(uncached_texts) > 100
-            )
+            # Legacy implementation
+            embeddings = []
+            uncached_texts = []
+            uncached_indices = []
             
-            # Cache new embeddings
+            # Check cache for each text
             if self.cache:
-                for text, embedding in zip(uncached_texts, new_embeddings):
-                    self.cache.set(text, self.model_name, embedding)
+                for i, text in enumerate(texts):
+                    cached = self.cache.get(text, self.model_name)
+                    if cached is not None:
+                        embeddings.append((i, cached))
+                    else:
+                        uncached_texts.append(text)
+                        uncached_indices.append(i)
+            else:
+                uncached_texts = texts
+                uncached_indices = list(range(len(texts)))
             
-            # Combine with cached embeddings
-            for idx, embedding in zip(uncached_indices, new_embeddings):
-                embeddings.append((idx, embedding))
-        
-        # Sort by original index and extract embeddings
-        embeddings.sort(key=lambda x: x[0])
-        return np.array([emb for _, emb in embeddings])
+            # Generate embeddings for uncached texts
+            if uncached_texts:
+                new_embeddings = self.model.encode(
+                    uncached_texts,
+                    batch_size=batch_size,
+                    convert_to_numpy=True,
+                    show_progress_bar=len(uncached_texts) > 100
+                )
+                
+                # Cache new embeddings
+                if self.cache:
+                    for text, embedding in zip(uncached_texts, new_embeddings):
+                        self.cache.set(text, self.model_name, embedding)
+                
+                # Combine with cached embeddings
+                for idx, embedding in zip(uncached_indices, new_embeddings):
+                    embeddings.append((idx, embedding))
+            
+            # Sort by original index and extract embeddings
+            embeddings.sort(key=lambda x: x[0])
+            return np.array([emb for _, emb in embeddings])
     
     def embed_strategy_document(self, doc: 'StrategyDocument') -> np.ndarray:
         """Generate hierarchical embeddings for strategy document."""
@@ -307,25 +373,30 @@ class SemanticEmbedder:
         embedding2: np.ndarray
     ) -> float:
         """Calculate cosine similarity between two embeddings."""
-        if embedding1.size == 0 or embedding2.size == 0:
-            return 0.0
-        
-        # Ensure same dimensions
-        if embedding1.shape != embedding2.shape:
-            return 0.0
-        
-        # Calculate cosine similarity
-        dot_product = np.dot(embedding1, embedding2)
-        norm1 = np.linalg.norm(embedding1)
-        norm2 = np.linalg.norm(embedding2)
-        
-        if norm1 == 0 or norm2 == 0:
-            return 0.0
-        
-        similarity = dot_product / (norm1 * norm2)
-        
-        # Ensure in valid range
-        return float(np.clip(similarity, -1.0, 1.0))
+        # Use enhanced embedder if available
+        if self.enhanced_embedder:
+            return self.enhanced_embedder.calculate_similarity(embedding1, embedding2)
+        else:
+            # Legacy implementation
+            if embedding1.size == 0 or embedding2.size == 0:
+                return 0.0
+            
+            # Ensure same dimensions
+            if embedding1.shape != embedding2.shape:
+                return 0.0
+            
+            # Calculate cosine similarity
+            dot_product = np.dot(embedding1, embedding2)
+            norm1 = np.linalg.norm(embedding1)
+            norm2 = np.linalg.norm(embedding2)
+            
+            if norm1 == 0 or norm2 == 0:
+                return 0.0
+            
+            similarity = dot_product / (norm1 * norm2)
+            
+            # Ensure in valid range
+            return float(np.clip(similarity, -1.0, 1.0))
     
     def find_similar(
         self,
@@ -352,3 +423,51 @@ class SemanticEmbedder:
         similarities.sort(key=lambda x: x[1], reverse=True)
         
         return similarities[:top_k]
+    
+    def get_model_info(self) -> Dict[str, Any]:
+        """Get information about the loaded model and capabilities."""
+        if self.enhanced_embedder:
+            info = self.enhanced_embedder.get_model_info()
+            info['enhanced_features'] = True
+            info['domain_selection_available'] = self.domain_selector is not None
+        else:
+            info = {
+                'model_name': self.model_name,
+                'enhanced_features': False,
+                'domain_selection_available': False,
+                'is_mock': isinstance(self.model, MockSentenceTransformer),
+                'embedding_dim': 768
+            }
+        
+        return info
+    
+    def get_stats(self) -> Dict[str, Any]:
+        """Get usage statistics and performance metrics."""
+        if self.enhanced_embedder:
+            stats = self.enhanced_embedder.get_stats()
+            if self.domain_selector:
+                stats['domain_selector_stats'] = self.domain_selector.get_stats()
+        else:
+            stats = {
+                'enhanced_features': False,
+                'texts_encoded': 0,
+                'cache_hits': 0,
+                'model_calls': 0
+            }
+        
+        return stats
+    
+    def clear_cache(self, older_than_hours: Optional[int] = None):
+        """Clear embedding cache."""
+        if self.enhanced_embedder:
+            self.enhanced_embedder.clear_cache(older_than_hours)
+        elif hasattr(self, 'cache') and self.cache:
+            self.cache.clear()
+    
+    def warm_up(self, sample_texts: Optional[List[str]] = None):
+        """Warm up the model with sample texts for better initial performance."""
+        if self.enhanced_embedder:
+            self.enhanced_embedder.warm_up(sample_texts)
+        elif sample_texts:
+            # Simple warm-up for legacy implementation
+            _ = self.embed_texts(sample_texts[:5])  # Just embed first 5 texts
