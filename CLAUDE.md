@@ -2,6 +2,26 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with the DataScience Platform production codebase.
 
+## ⚠️ CRITICAL: Protected Development Directories
+
+The following directories are **ESSENTIAL** for Claude Code development and must **NEVER** be deleted or modified:
+
+### `.claude/` Directory (222 files)
+Contains Claude Code agent configurations, commands, and workflows:
+- **agents/** - 11 specialized agent teams (bmad, engineering, design, testing, studio-operations, etc.)
+- **commands/** - 16 slash commands for rapid development (/so, /bmad, /backend, /ui, etc.)
+- **hooks/** - 48 automation hooks for quality gates and safety checks
+- **config/** - Multi-agent coordination and analytics settings
+
+### `.bmad-core/` Directory (83 files)
+Contains BMAD (Business-Model-Architecture-Development) method implementation:
+- **agents/** - 13 specialized BMAD agents (analyst, architect, orchestrator, etc.)
+- **workflows/** - Brownfield/greenfield development patterns
+- **tasks/** - Templates, checklists, and verification scripts
+- **expansion-packs/** - Extended agent capabilities
+
+**IMPORTANT**: These directories enable the rapid development methodology and multi-agent coordination that powers this project. They are tracked in git and must be preserved. Any Claude Code instance working on this repo needs these directories intact to access the full development toolkit.
+
 ## Production-Ready ML Analytics Platform
 
 The DataScience Platform is a **production-ready, enterprise-grade** ML analytics platform designed for scalable data science operations. This is not a prototype or proof-of-concept, but a fully implemented system with comprehensive testing, error handling, and deployment capabilities.

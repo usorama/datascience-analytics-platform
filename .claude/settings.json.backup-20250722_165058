@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "PreToolUse": [{
+      "matcher": "",
+      "hooks": [{
+        "type": "command",
+        "command": "uv run .claude/hooks/project_risk_analyzer.py"
+      }]
+    }],
+    "PostToolUse": [{
+      "matcher": "",
+      "hooks": [{
+        "type": "command",
+        "command": "uv run .claude/hooks/project_intelligence.py --learn --metrics"
+      }]
+    }],
+    "Stop": [{
+      "hooks": [{
+        "type": "command",
+        "command": "uv run .claude/hooks/project_session_analyzer.py --generate-insights"
+      }]
+    }]
+  }
+}

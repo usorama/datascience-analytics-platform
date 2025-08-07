@@ -1,0 +1,2 @@
+{"timestamp": "2025-07-22T17:56:30.716685", "type": "prompt_validation", "prompt_length": 11, "prompt_hash": -8444669842959227342, "decision": "SAFE", "risk_level": 0.0, "reason": "No significant risk patterns detected"}
+{"timestamp": "2025-07-22T17:56:34.853697", "type": "prompt_validation", "prompt_length": 8, "prompt_hash": -6406052279706690571, "decision": "BLOCK", "risk_level": 0.9, "reason": "Dangerous file deletion detected"}

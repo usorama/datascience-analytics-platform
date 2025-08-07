@@ -1,0 +1,59 @@
+# Enhanced BMAD Core Configuration with Completion Enforcement
+
+bmad:
+  version: "2.0-strict"
+  enforcement_mode: "mandatory"
+  
+  completion_policy:
+    mode: "strict"
+    partial_completion_allowed: false
+    evidence_required: true
+    verification_agent_required: true
+    
+  quality_gates:
+    - name: "Code Complete"
+      requirements:
+        - all_tasks_checked: true
+        - all_tests_passing: true
+        - zero_linter_errors: true
+        
+    - name: "Verification Complete"
+      requirements:
+        - dod_checklist_complete: true
+        - outcome_verification_complete: true
+        - completion_enforcer_approved: true
+        
+    - name: "Evidence Documented"
+      requirements:
+        - test_logs_captured: true
+        - functionality_demonstrated: true
+        - performance_verified: true
+        
+  blocking_conditions:
+    - unchecked_items_in_dod
+    - failing_tests
+    - missing_verification_record
+    - incomplete_evidence
+    - security_vulnerabilities
+    
+  agent_overrides:
+    dev:
+      use_strict_dod: true
+      require_verification: true
+      allow_partial_completion: false
+      
+  git_integration:
+    pre_commit_hook: "enabled"
+    block_incomplete_commits: true
+    require_verification_record: true
+    
+  reporting:
+    track_completion_rates: true
+    track_verification_failures: true
+    generate_quality_metrics: true
+    
+  enforcement_exceptions:
+    allowed: false
+    approval_required_from: ["no_one"]
+    
+# Deviance from these rules is NOT permitted

@@ -1,0 +1,38 @@
+{
+  "name": "bmad-completion-enforcement",
+  "version": "1.0.0",
+  "description": "Strict completion verification expansion pack for BMAD Method",
+  "keywords": ["bmad", "expansion-pack", "verification", "quality-assurance"],
+  "author": {
+    "name": "Virtual Tutor Team",
+    "url": "https://github.com/umasankrudhya"
+  },
+  "license": "MIT",
+  "bmadExpansion": {
+    "type": "enhancement",
+    "category": "quality-assurance",
+    "coreVersion": ">=4.0.0",
+    "agents": [
+      "completion-enforcer"
+    ],
+    "checklists": [
+      "story-dod-strict",
+      "outcome-verification"
+    ],
+    "hooks": [
+      "pre-commit-completion-check"
+    ],
+    "modifies": {
+      "agents": ["dev", "bmad-orchestrator"],
+      "config": ["core-config.yaml"],
+      "templates": ["story-template"]
+    }
+  },
+  "files": [
+    "agents/",
+    "checklists/",
+    "hooks/",
+    "guides/",
+    "README.md"
+  ]
+}

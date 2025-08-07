@@ -199,5 +199,5 @@ docs/api/
 .benchmarks/
 
 # BMAD files
-.bmad-core/
-.claude/
+# .bmad-core/
+# .claude/

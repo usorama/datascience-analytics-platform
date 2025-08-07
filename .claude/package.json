@@ -1,0 +1,49 @@
+{
+  "name": "claude-multi-agent-bmad-system",
+  "version": "1.0.0",
+  "description": "Production-ready Multi-Agent Development System with BMAD quality enforcement",
+  "main": "install.js",
+  "bin": {
+    "claude-multi-agent-bmad-system": "./install/install.js"
+  },
+  "scripts": {
+    "install": "node install/install.js",
+    "package": "node install/package.js",
+    "test": "node install/test-install.js"
+  },
+  "keywords": [
+    "claude-code",
+    "multi-agent",
+    "bmad", 
+    "quality-enforcement",
+    "development-automation",
+    "ai-development",
+    "continuous-improvement"
+  ],
+  "author": "Multi-Agent Development Team",
+  "license": "MIT",
+  "dependencies": {
+    "fs-extra": "^11.1.1",
+    "path": "^0.12.7",
+    "inquirer": "^9.2.7",
+    "chalk": "^5.3.0",
+    "ora": "^7.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/usorama/claude-multi-agent-bmad-system.git"
+  },
+  "files": [
+    "install/",
+    "commands/",
+    "agents/",
+    "hooks/",
+    "config/",
+    "docs/",
+    "CLAUDE.md",
+    "README.md"
+  ]
+}
