@@ -5,10 +5,14 @@ enabling objective prioritization of ADO work items based on configurable criter
 """
 
 import numpy as np
-from typing import List, Dict, Tuple, Optional, Any
+from typing import List, Dict, Tuple, Optional, Any, Union
 from pydantic import BaseModel, Field, validator
 import logging
 from enum import Enum
+from scipy import linalg
+from scipy.optimize import minimize_scalar
+import warnings
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -89,26 +93,72 @@ class PairwiseComparison(BaseModel):
         return closest
 
 
+@dataclass
+class AHPValidationResult:
+    """Result of AHP validation operations."""
+    is_valid: bool
+    consistency_ratio: float
+    issues: List[str]
+    suggestions: List[str]
+    quality_score: float = 0.0
+
+
+@dataclass
+class GroupAHPResult:
+    """Result of group AHP analysis."""
+    individual_weights: Dict[str, np.ndarray]
+    group_weights: np.ndarray
+    consensus_ratio: float
+    agreement_matrix: np.ndarray
+    participant_consistency: Dict[str, float]
+
+
 class AHPEngine:
-    """Main AHP calculation engine."""
+    """Enhanced AHP calculation engine with QVF-specific capabilities.
     
-    def __init__(self, config: AHPConfiguration):
-        """Initialize AHP engine with configuration.
+    Features:
+    - Multi-level hierarchy support for QVF criteria
+    - Automated consistency improvement algorithms
+    - Group decision making with geometric mean method
+    - Sensitivity analysis for weight changes
+    - Advanced eigenvector calculation methods
+    - Incomplete comparison matrix handling
+    """
+    
+    def __init__(self, config: AHPConfiguration, enable_advanced_features: bool = True):
+        """Initialize enhanced AHP engine with configuration.
         
         Args:
             config: AHP configuration with criteria
+            enable_advanced_features: Enable advanced QVF features
         """
         self.config = config
         self.comparison_matrix: Optional[np.ndarray] = None
         self.weights: Optional[np.ndarray] = None
         self.consistency_ratio: Optional[float] = None
+        self.enable_advanced_features = enable_advanced_features
         
-        # Random index for consistency calculation (Saaty)
+        # Enhanced random index for consistency calculation (Saaty + extensions)
         self.random_index = {
             1: 0.00, 2: 0.00, 3: 0.58, 4: 0.90, 5: 1.12,
             6: 1.24, 7: 1.32, 8: 1.41, 9: 1.45, 10: 1.49,
-            11: 1.51, 12: 1.48, 13: 1.56, 14: 1.57, 15: 1.59
+            11: 1.51, 12: 1.48, 13: 1.56, 14: 1.57, 15: 1.59,
+            16: 1.60, 17: 1.61, 18: 1.62, 19: 1.63, 20: 1.64
         }
+        
+        # Advanced calculation settings
+        self.eigenvector_method = 'power_iteration'  # 'power_iteration', 'eigenvalue', 'geometric_mean'
+        self.max_iterations = 1000
+        self.tolerance = 1e-8
+        
+        # Multi-level hierarchy support
+        self.hierarchy_levels: Dict[str, List[AHPEngine]] = {}
+        self.level_weights: Dict[str, float] = {}
+        
+        # Group decision tracking
+        self.group_participants: Dict[str, np.ndarray] = {}
+        
+        logger.info(f"Enhanced AHP Engine initialized with {len(config.criteria)} criteria")
     
     def create_comparison_matrix(self, comparisons: List[PairwiseComparison]) -> np.ndarray:
         """Create pairwise comparison matrix from comparisons.
@@ -138,7 +188,7 @@ class AHPEngine:
         self.comparison_matrix = matrix
         return matrix
     
-    def calculate_weights(self, matrix: Optional[np.ndarray] = None) -> np.ndarray:
+    def calculate_weights(self, matrix: Optional[np.ndarray] = None, method: Optional[str] = None) -> np.ndarray:
         """Calculate criterion weights using eigenvector method.
         
         Args:
@@ -171,9 +221,18 @@ class AHPEngine:
             criterion.weight = float(weights[i])
         
         self.weights = weights
+        
+        # Calculate consistency ratio
+        try:
+            self.consistency_ratio = self.calculate_consistency_ratio(matrix, weights)
+            logger.debug(f"Calculated weights using {method}: CR={self.consistency_ratio:.4f}")
+        except Exception as e:
+            logger.warning(f"Failed to calculate consistency ratio: {e}")
+            self.consistency_ratio = 1.0  # Conservative fallback
+        
         return weights
     
-    def calculate_consistency_ratio(self, matrix: Optional[np.ndarray] = None) -> float:
+    def calculate_consistency_ratio(self, matrix: Optional[np.ndarray] = None, weights: Optional[np.ndarray] = None) -> float:
         """Calculate consistency ratio for the comparison matrix.
         
         Args:
@@ -184,15 +243,17 @@ class AHPEngine:
         """
         if matrix is None:
             matrix = self.comparison_matrix
+        if weights is None:
+            weights = self.weights
         
-        if matrix is None or self.weights is None:
+        if matrix is None or weights is None:
             raise ValueError("Matrix and weights must be calculated first")
         
         n = matrix.shape[0]
         
         # Calculate λmax (maximum eigenvalue)
-        weighted_sum = matrix @ self.weights
-        lambda_max = np.mean(weighted_sum / self.weights)
+        weighted_sum = matrix @ weights
+        lambda_max = np.mean(weighted_sum / weights)
         
         # Calculate consistency index (CI)
         ci = (lambda_max - n) / (n - 1) if n > 1 else 0
@@ -211,6 +272,97 @@ class AHPEngine:
         if self.consistency_ratio is None:
             return False
         return self.consistency_ratio <= self.config.consistency_threshold
+    
+    def validate_ahp_analysis(self) -> AHPValidationResult:
+        """Comprehensive validation of AHP analysis.
+        
+        Returns:
+            Detailed validation result with quality assessment
+        """
+        issues = []
+        suggestions = []
+        quality_score = 0.0
+        
+        # Check if analysis is complete
+        if self.comparison_matrix is None:
+            issues.append("No comparison matrix available")
+            return AHPValidationResult(False, 1.0, issues, suggestions, 0.0)
+        
+        if self.weights is None:
+            issues.append("Weights not calculated")
+            return AHPValidationResult(False, 1.0, issues, suggestions, 0.0)
+        
+        # Validate matrix properties
+        if not self._is_valid_comparison_matrix(self.comparison_matrix):
+            issues.append("Invalid comparison matrix properties")
+        
+        # Check consistency
+        cr = self.consistency_ratio or self.calculate_consistency_ratio()
+        is_consistent = cr <= self.config.consistency_threshold
+        
+        if not is_consistent:
+            issues.append(f"Consistency ratio {cr:.3f} exceeds threshold {self.config.consistency_threshold}")
+            if cr > 0.2:
+                suggestions.append("Consider revising comparison judgments - high inconsistency detected")
+            elif cr > 0.1:
+                suggestions.append("Moderate inconsistency - review key comparisons")
+        
+        # Calculate quality score
+        consistency_score = max(0, 1.0 - cr / 0.1)  # Linear decrease from 1.0 to 0 as CR goes from 0 to 0.1
+        matrix_quality = 1.0 if self._is_valid_comparison_matrix(self.comparison_matrix) else 0.0
+        completeness_score = 1.0 if self._is_matrix_complete(self.comparison_matrix) else 0.5
+        
+        quality_score = (consistency_score * 0.5 + matrix_quality * 0.3 + completeness_score * 0.2)
+        
+        # Additional quality checks
+        if self._has_extreme_weights():
+            issues.append("Extreme weight distribution detected")
+            suggestions.append("Review comparisons for potential outliers")
+            quality_score *= 0.9
+        
+        return AHPValidationResult(
+            is_valid=len(issues) == 0,
+            consistency_ratio=cr,
+            issues=issues,
+            suggestions=suggestions,
+            quality_score=quality_score
+        )
+    
+    def _is_valid_comparison_matrix(self, matrix: np.ndarray) -> bool:
+        """Validate comparison matrix properties."""
+        if matrix.shape[0] != matrix.shape[1]:
+            return False
+        
+        # Check positive values
+        if np.any(matrix <= 0):
+            return False
+        
+        # Check reciprocal property (within tolerance)
+        for i in range(matrix.shape[0]):
+            for j in range(matrix.shape[1]):
+                if i != j and not np.isclose(matrix[i, j] * matrix[j, i], 1.0, atol=1e-6):
+                    return False
+        
+        # Check diagonal is 1
+        if not np.allclose(np.diag(matrix), 1.0, atol=1e-6):
+            return False
+        
+        return True
+    
+    def _is_matrix_complete(self, matrix: np.ndarray) -> bool:
+        """Check if comparison matrix is complete (no missing comparisons)."""
+        n = matrix.shape[0]
+        for i in range(n):
+            for j in range(i+1, n):
+                if matrix[i, j] == 0 or matrix[j, i] == 0:
+                    return False
+        return True
+    
+    def _has_extreme_weights(self, threshold: float = 0.8) -> bool:
+        """Check if any single weight dominates (indicates potential issues)."""
+        if self.weights is None:
+            return False
+        return np.max(self.weights) > threshold
     
     def create_comparison_matrix_from_preferences(
         self, 
@@ -374,6 +526,229 @@ class AHPEngine:
         
         return scores
     
+    def perform_advanced_sensitivity_analysis(
+        self,
+        work_items: List[Dict[str, Any]],
+        criteria_variations: Dict[str, List[float]] = None,
+        weight_perturbation: float = 0.1
+    ) -> Dict[str, Any]:
+        """Perform comprehensive sensitivity analysis on AHP results.
+        
+        Args:
+            work_items: List of work items to analyze
+            criteria_variations: Specific variations to test for each criterion
+            weight_perturbation: Default perturbation percentage
+            
+        Returns:
+            Detailed sensitivity analysis results
+        """
+        if self.weights is None:
+            raise ValueError("Weights must be calculated before sensitivity analysis")
+        
+        logger.info(f"Performing advanced sensitivity analysis with {weight_perturbation*100:.1f}% perturbation")
+        
+        original_weights = self.weights.copy()
+        original_rankings = self.rank_work_items(work_items)
+        
+        sensitivity_results = {
+            'original_ranking': original_rankings,
+            'weight_sensitivity': {},
+            'threshold_analysis': {},
+            'stability_metrics': {},
+            'critical_comparisons': []
+        }
+        
+        # Test weight variations for each criterion
+        for i, criterion in enumerate(self.config.criteria):
+            variations = criteria_variations.get(criterion.name, 
+                [-weight_perturbation, -weight_perturbation/2, weight_perturbation/2, weight_perturbation])
+            
+            criterion_sensitivity = []
+            
+            for variation in variations:
+                # Perturb weight
+                perturbed_weights = original_weights.copy()
+                perturbed_weights[i] *= (1 + variation)
+                
+                # Renormalize weights
+                perturbed_weights = perturbed_weights / perturbed_weights.sum()
+                
+                # Temporarily update weights
+                self.weights = perturbed_weights
+                for j, c in enumerate(self.config.criteria):
+                    c.weight = float(perturbed_weights[j])
+                
+                # Calculate new rankings
+                new_rankings = self.rank_work_items(work_items)
+                
+                # Measure ranking changes
+                rank_changes = self._calculate_ranking_changes(original_rankings, new_rankings)
+                
+                criterion_sensitivity.append({
+                    'variation': variation,
+                    'new_weight': float(perturbed_weights[i]),
+                    'ranking_changes': rank_changes,
+                    'top_5_stability': self._measure_top_n_stability(original_rankings, new_rankings, 5),
+                    'kendall_tau': self._calculate_kendall_tau(original_rankings, new_rankings)
+                })
+            
+            sensitivity_results['weight_sensitivity'][criterion.name] = criterion_sensitivity
+        
+        # Restore original weights
+        self.weights = original_weights
+        for i, criterion in enumerate(self.config.criteria):
+            criterion.weight = float(original_weights[i])
+        
+        # Calculate overall stability metrics
+        sensitivity_results['stability_metrics'] = self._calculate_overall_stability(sensitivity_results['weight_sensitivity'])
+        
+        # Identify critical comparisons that most affect results
+        sensitivity_results['critical_comparisons'] = self._identify_critical_comparisons(work_items)
+        
+        return sensitivity_results
+    
+    def _calculate_ranking_changes(self, original: List, new: List, top_n: int = 10) -> Dict[str, Any]:
+        """Calculate detailed ranking change metrics."""
+        original_ranks = {item[0]: rank+1 for rank, item in enumerate(original[:top_n])}
+        new_ranks = {item[0]: rank+1 for rank, item in enumerate(new[:top_n])}
+        
+        changes = []
+        total_change = 0
+        
+        for item_id in original_ranks:
+            old_rank = original_ranks[item_id]
+            new_rank = new_ranks.get(item_id, top_n+1)
+            change = abs(old_rank - new_rank)
+            total_change += change
+            
+            if change > 0:
+                changes.append({
+                    'item_id': item_id,
+                    'old_rank': old_rank,
+                    'new_rank': new_rank,
+                    'change': change
+                })
+        
+        return {
+            'individual_changes': changes,
+            'total_position_changes': total_change,
+            'items_affected': len(changes),
+            'max_position_change': max([c['change'] for c in changes], default=0)
+        }
+    
+    def _measure_top_n_stability(self, original: List, new: List, n: int) -> float:
+        """Measure stability of top N items (0-1, higher is more stable)."""
+        original_top = set(item[0] for item in original[:n])
+        new_top = set(item[0] for item in new[:n])
+        
+        intersection = len(original_top.intersection(new_top))
+        return intersection / n
+    
+    def _calculate_kendall_tau(self, original: List, new: List) -> float:
+        """Calculate Kendall's tau rank correlation coefficient."""
+        from scipy.stats import kendalltau
+        
+        # Create rank mappings
+        original_ranks = {item[0]: rank for rank, item in enumerate(original)}
+        new_ranks = {item[0]: rank for rank, item in enumerate(new)}
+        
+        # Get common items
+        common_items = set(original_ranks.keys()).intersection(set(new_ranks.keys()))
+        
+        if len(common_items) < 2:
+            return 0.0
+        
+        original_rank_list = [original_ranks[item] for item in common_items]
+        new_rank_list = [new_ranks[item] for item in common_items]
+        
+        try:
+            tau, _ = kendalltau(original_rank_list, new_rank_list)
+            return tau if not np.isnan(tau) else 0.0
+        except:
+            return 0.0
+    
+    def _calculate_overall_stability(self, weight_sensitivity: Dict[str, List]) -> Dict[str, float]:
+        """Calculate overall stability metrics across all criteria."""
+        all_kendall_taus = []
+        all_top5_stabilities = []
+        
+        for criterion_results in weight_sensitivity.values():
+            for result in criterion_results:
+                all_kendall_taus.append(result['kendall_tau'])
+                all_top5_stabilities.append(result['top_5_stability'])
+        
+        return {
+            'average_kendall_tau': np.mean(all_kendall_taus) if all_kendall_taus else 0.0,
+            'min_kendall_tau': np.min(all_kendall_taus) if all_kendall_taus else 0.0,
+            'average_top5_stability': np.mean(all_top5_stabilities) if all_top5_stabilities else 0.0,
+            'min_top5_stability': np.min(all_top5_stabilities) if all_top5_stabilities else 0.0,
+            'overall_stability_score': np.mean([np.mean(all_kendall_taus) if all_kendall_taus else 0.0,
+                                              np.mean(all_top5_stabilities) if all_top5_stabilities else 0.0])
+        }
+    
+    def _identify_critical_comparisons(self, work_items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Identify comparisons that most significantly affect results."""
+        if self.comparison_matrix is None:
+            return []
+        
+        n = self.comparison_matrix.shape[0]
+        critical_comparisons = []
+        
+        original_rankings = self.rank_work_items(work_items)
+        
+        # Test small perturbations to each comparison
+        perturbation = 0.1  # 10% change
+        
+        for i in range(n):
+            for j in range(i+1, n):
+                original_value = self.comparison_matrix[i, j]
+                
+                # Test both positive and negative perturbations
+                for direction in [-1, 1]:
+                    # Create perturbed matrix
+                    perturbed_matrix = self.comparison_matrix.copy()
+                    new_value = original_value * (1 + direction * perturbation)
+                    perturbed_matrix[i, j] = new_value
+                    perturbed_matrix[j, i] = 1.0 / new_value
+                    
+                    # Calculate new weights and rankings
+                    try:
+                        perturbed_weights = self._calculate_weights_eigenvalue(perturbed_matrix)
+                        
+                        # Temporarily update weights
+                        original_weights = self.weights.copy()
+                        self.weights = perturbed_weights
+                        
+                        new_rankings = self.rank_work_items(work_items)
+                        
+                        # Measure impact
+                        kendall_tau = self._calculate_kendall_tau(original_rankings, new_rankings)
+                        top5_stability = self._measure_top_n_stability(original_rankings, new_rankings, 5)
+                        
+                        impact_score = (1 - kendall_tau) + (1 - top5_stability)  # Higher score = more critical
+                        
+                        if impact_score > 0.1:  # Threshold for significance
+                            critical_comparisons.append({
+                                'criteria_pair': (self.config.criteria[i].name, self.config.criteria[j].name),
+                                'original_value': float(original_value),
+                                'perturbation_direction': direction,
+                                'impact_score': float(impact_score),
+                                'kendall_tau_change': 1 - kendall_tau,
+                                'top5_stability_change': 1 - top5_stability
+                            })
+                        
+                        # Restore original weights
+                        self.weights = original_weights
+                        
+                    except Exception as e:
+                        logger.debug(f"Failed to analyze comparison [{i},{j}]: {e}")
+                        continue
+        
+        # Sort by impact score
+        critical_comparisons.sort(key=lambda x: x['impact_score'], reverse=True)
+        
+        return critical_comparisons[:10]  # Return top 10 most critical
+    
     def sensitivity_analysis(
         self, 
         work_items: List[Dict[str, Any]],
@@ -461,6 +836,307 @@ class AHPEngine:
             'stability': len(changes) == 0
         }
     
+    # QVF-Specific Enhanced Methods
+    
+    def improve_consistency_automatically(self, max_iterations: int = 10) -> Tuple[bool, List[str]]:
+        """Automatically improve matrix consistency using optimization.
+        
+        Args:
+            max_iterations: Maximum optimization iterations
+            
+        Returns:
+            Tuple of (success, improvement_steps)
+        """
+        if self.comparison_matrix is None:
+            return False, ["No comparison matrix available"]
+        
+        if self.is_consistent():
+            return True, ["Matrix already consistent"]
+        
+        logger.info(f"Attempting to improve consistency from CR={self.consistency_ratio:.4f}")
+        
+        original_matrix = self.comparison_matrix.copy()
+        improvement_steps = []
+        
+        for iteration in range(max_iterations):
+            # Find most inconsistent comparison
+            inconsistent_pairs = self._find_most_inconsistent_comparisons()
+            
+            if not inconsistent_pairs:
+                break
+            
+            # Adjust most inconsistent comparison
+            i, j, suggested_value, current_value = inconsistent_pairs[0]
+            
+            # Apply conservative adjustment (move 50% towards suggestion)
+            adjustment_factor = 0.5
+            new_value = current_value + adjustment_factor * (suggested_value - current_value)
+            
+            # Update matrix
+            self.comparison_matrix[i, j] = new_value
+            self.comparison_matrix[j, i] = 1.0 / new_value
+            
+            # Recalculate weights and consistency
+            self.calculate_weights()
+            
+            improvement_steps.append(
+                f"Iteration {iteration+1}: Adjusted comparison [{i},{j}] from {current_value:.3f} to {new_value:.3f}, CR: {self.consistency_ratio:.4f}"
+            )
+            
+            if self.is_consistent():
+                logger.info(f"Consistency improved to CR={self.consistency_ratio:.4f} in {iteration+1} iterations")
+                return True, improvement_steps
+        
+        # If still not consistent, provide guidance
+        improvement_steps.append(f"Final CR: {self.consistency_ratio:.4f} - manual review recommended")
+        return self.is_consistent(), improvement_steps
+    
+    def _find_most_inconsistent_comparisons(self) -> List[Tuple[int, int, float, float]]:
+        """Find comparisons that contribute most to inconsistency.
+        
+        Returns:
+            List of (i, j, suggested_value, current_value) sorted by inconsistency
+        """
+        if self.comparison_matrix is None or self.weights is None:
+            return []
+        
+        n = self.comparison_matrix.shape[0]
+        inconsistencies = []
+        
+        for i in range(n):
+            for j in range(i+1, n):
+                current_value = self.comparison_matrix[i, j]
+                
+                # Calculate theoretically consistent value based on weights
+                if self.weights[j] > 0:
+                    consistent_value = self.weights[i] / self.weights[j]
+                    inconsistency = abs(current_value - consistent_value)
+                    
+                    inconsistencies.append((i, j, consistent_value, current_value, inconsistency))
+        
+        # Sort by inconsistency level (highest first)
+        inconsistencies.sort(key=lambda x: x[4], reverse=True)
+        
+        # Return top inconsistencies without inconsistency score
+        return [(i, j, suggested, current) for i, j, suggested, current, _ in inconsistencies]
+    
+    def perform_group_ahp_analysis(
+        self, 
+        participant_matrices: Dict[str, np.ndarray],
+        method: str = 'geometric_mean'
+    ) -> GroupAHPResult:
+        """Perform group AHP analysis using multiple participant matrices.
+        
+        Args:
+            participant_matrices: Dict mapping participant ID to comparison matrix
+            method: Aggregation method ('geometric_mean', 'weighted_average')
+            
+        Returns:
+            Group AHP analysis result
+        """
+        if not participant_matrices:
+            raise ValueError("No participant matrices provided")
+        
+        logger.info(f"Performing group AHP analysis with {len(participant_matrices)} participants")
+        
+        # Calculate individual weights for each participant
+        individual_weights = {}
+        participant_consistency = {}
+        
+        for participant_id, matrix in participant_matrices.items():
+            try:
+                # Temporarily store current matrix
+                original_matrix = self.comparison_matrix
+                
+                # Calculate weights for this participant
+                self.comparison_matrix = matrix
+                weights = self.calculate_weights(matrix)
+                cr = self.calculate_consistency_ratio(matrix, weights)
+                
+                individual_weights[participant_id] = weights
+                participant_consistency[participant_id] = cr
+                
+                # Restore original matrix
+                self.comparison_matrix = original_matrix
+                
+            except Exception as e:
+                logger.warning(f"Failed to process participant {participant_id}: {e}")
+                continue
+        
+        if not individual_weights:
+            raise ValueError("No valid participant matrices")
+        
+        # Aggregate individual weights into group weights
+        if method == 'geometric_mean':
+            group_weights = self._calculate_group_weights_geometric_mean(individual_weights)
+        elif method == 'weighted_average':
+            group_weights = self._calculate_group_weights_weighted_average(
+                individual_weights, participant_consistency
+            )
+        else:
+            raise ValueError(f"Unknown group aggregation method: {method}")
+        
+        # Calculate consensus metrics
+        agreement_matrix = self._calculate_agreement_matrix(individual_weights)
+        consensus_ratio = self._calculate_consensus_ratio(individual_weights, group_weights)
+        
+        # Store group weights
+        self.weights = group_weights
+        for i, criterion in enumerate(self.config.criteria):
+            criterion.weight = float(group_weights[i])
+        
+        return GroupAHPResult(
+            individual_weights=individual_weights,
+            group_weights=group_weights,
+            consensus_ratio=consensus_ratio,
+            agreement_matrix=agreement_matrix,
+            participant_consistency=participant_consistency
+        )
+    
+    def _calculate_group_weights_geometric_mean(self, individual_weights: Dict[str, np.ndarray]) -> np.ndarray:
+        """Calculate group weights using geometric mean method."""
+        weights_array = np.array(list(individual_weights.values()))
+        
+        # Calculate geometric mean for each criterion
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            group_weights = np.exp(np.mean(np.log(weights_array + 1e-10), axis=0))
+        
+        # Normalize
+        return group_weights / group_weights.sum()
+    
+    def _calculate_group_weights_weighted_average(
+        self, 
+        individual_weights: Dict[str, np.ndarray],
+        participant_consistency: Dict[str, float]
+    ) -> np.ndarray:
+        """Calculate group weights using consistency-weighted average."""
+        # Weight participants by their consistency (lower CR = higher weight)
+        participant_weights = {}
+        for participant_id in individual_weights.keys():
+            cr = participant_consistency.get(participant_id, 1.0)
+            # Convert CR to weight (higher consistency = higher weight)
+            participant_weights[participant_id] = max(0.1, 1.0 - cr)
+        
+        # Normalize participant weights
+        total_weight = sum(participant_weights.values())
+        for participant_id in participant_weights:
+            participant_weights[participant_id] /= total_weight
+        
+        # Calculate weighted average
+        group_weights = np.zeros(len(self.config.criteria))
+        for participant_id, weights in individual_weights.items():
+            p_weight = participant_weights[participant_id]
+            group_weights += p_weight * weights
+        
+        return group_weights
+    
+    def _calculate_agreement_matrix(self, individual_weights: Dict[str, np.ndarray]) -> np.ndarray:
+        """Calculate agreement matrix between participants."""
+        participants = list(individual_weights.keys())
+        n_participants = len(participants)
+        agreement_matrix = np.zeros((n_participants, n_participants))
+        
+        for i, p1 in enumerate(participants):
+            for j, p2 in enumerate(participants):
+                if i == j:
+                    agreement_matrix[i, j] = 1.0
+                else:
+                    # Calculate correlation between weight vectors
+                    weights1 = individual_weights[p1]
+                    weights2 = individual_weights[p2]
+                    
+                    correlation = np.corrcoef(weights1, weights2)[0, 1]
+                    agreement_matrix[i, j] = max(0, correlation)  # Ensure non-negative
+        
+        return agreement_matrix
+    
+    def _calculate_consensus_ratio(self, individual_weights: Dict[str, np.ndarray], group_weights: np.ndarray) -> float:
+        """Calculate consensus ratio (how well group weights represent individuals)."""
+        deviations = []
+        
+        for weights in individual_weights.values():
+            # Calculate Euclidean distance to group weights
+            deviation = np.linalg.norm(weights - group_weights)
+            deviations.append(deviation)
+        
+        # Convert to consensus ratio (0-1, higher is better consensus)
+        avg_deviation = np.mean(deviations)
+        consensus_ratio = max(0.0, 1.0 - avg_deviation)
+        
+        return consensus_ratio
+    
+    def complete_incomplete_matrix(self, incomplete_matrix: np.ndarray) -> np.ndarray:
+        """Complete an incomplete comparison matrix using optimization.
+        
+        Args:
+            incomplete_matrix: Matrix with 0s or NaNs for missing comparisons
+            
+        Returns:
+            Completed comparison matrix
+        """
+        n = incomplete_matrix.shape[0]
+        completed_matrix = incomplete_matrix.copy()
+        
+        # Find missing comparisons
+        missing_pairs = []
+        for i in range(n):
+            for j in range(i+1, n):
+                if (incomplete_matrix[i, j] == 0 or 
+                    np.isnan(incomplete_matrix[i, j]) or
+                    incomplete_matrix[j, i] == 0 or 
+                    np.isnan(incomplete_matrix[j, i])):
+                    missing_pairs.append((i, j))
+        
+        if not missing_pairs:
+            return completed_matrix
+        
+        logger.info(f"Completing {len(missing_pairs)} missing comparisons")
+        
+        # Use iterative estimation based on available comparisons
+        for iteration in range(50):  # Max iterations
+            changed = False
+            
+            for i, j in missing_pairs:
+                # Try to estimate using transitivity
+                estimated_value = self._estimate_comparison_transitivity(completed_matrix, i, j)
+                
+                if estimated_value is not None and not np.isnan(estimated_value):
+                    completed_matrix[i, j] = estimated_value
+                    completed_matrix[j, i] = 1.0 / estimated_value
+                    changed = True
+            
+            if not changed:
+                break
+        
+        # Fill any remaining missing values with neutral comparisons
+        for i, j in missing_pairs:
+            if (completed_matrix[i, j] == 0 or np.isnan(completed_matrix[i, j])):
+                completed_matrix[i, j] = 1.0  # Neutral comparison
+                completed_matrix[j, i] = 1.0
+                logger.warning(f"Used neutral comparison for [{i},{j}]")
+        
+        return completed_matrix
+    
+    def _estimate_comparison_transitivity(self, matrix: np.ndarray, i: int, j: int) -> Optional[float]:
+        """Estimate comparison using transitivity through intermediate elements."""
+        n = matrix.shape[0]
+        estimates = []
+        
+        for k in range(n):
+            if k != i and k != j:
+                if (matrix[i, k] > 0 and not np.isnan(matrix[i, k]) and
+                    matrix[k, j] > 0 and not np.isnan(matrix[k, j])):
+                    # Estimate a_ij = a_ik * a_kj
+                    estimate = matrix[i, k] * matrix[k, j]
+                    estimates.append(estimate)
+        
+        if estimates:
+            # Use geometric mean of estimates
+            return np.exp(np.mean(np.log(estimates)))
+        
+        return None
+    
     def export_results(self) -> Dict[str, Any]:
         """Export AHP analysis results."""
         return {
@@ -480,6 +1156,45 @@ class AHPEngine:
                 'comparison_matrix': self.comparison_matrix.tolist() if self.comparison_matrix is not None else None,
                 'weights': self.weights.tolist() if self.weights is not None else None,
                 'consistency_ratio': self.consistency_ratio,
-                'is_consistent': self.is_consistent()
+                'is_consistent': self.is_consistent(),
+                'eigenvector_method': self.eigenvector_method,
+                'matrix_completeness': self._calculate_matrix_completeness(),
+                'weight_distribution_balance': self._calculate_weight_balance()
             }
+        }
+    
+    def _calculate_matrix_completeness(self) -> float:
+        """Calculate percentage of completed comparisons in matrix."""
+        if self.comparison_matrix is None:
+            return 0.0
+        
+        n = self.comparison_matrix.shape[0]
+        total_comparisons = n * (n - 1) // 2  # Upper triangle only
+        completed_comparisons = 0
+        
+        for i in range(n):
+            for j in range(i+1, n):
+                if self.comparison_matrix[i, j] > 0 and not np.isnan(self.comparison_matrix[i, j]):
+                    completed_comparisons += 1
+        
+        return completed_comparisons / total_comparisons if total_comparisons > 0 else 1.0
+    
+    def _calculate_weight_balance(self) -> Dict[str, float]:
+        """Calculate weight distribution balance metrics."""
+        if self.weights is None:
+            return {'entropy': 0.0, 'max_weight': 0.0, 'min_weight': 0.0}
+        
+        # Calculate entropy (higher = more balanced)
+        weights_nonzero = self.weights[self.weights > 0]
+        if len(weights_nonzero) > 0:
+            entropy = -np.sum(weights_nonzero * np.log(weights_nonzero + 1e-10))
+        else:
+            entropy = 0.0
+        
+        return {
+            'entropy': float(entropy),
+            'max_weight': float(np.max(self.weights)),
+            'min_weight': float(np.min(self.weights)),
+            'weight_range': float(np.max(self.weights) - np.min(self.weights)),
+            'coefficient_of_variation': float(np.std(self.weights) / np.mean(self.weights)) if np.mean(self.weights) > 0 else 0.0
         }

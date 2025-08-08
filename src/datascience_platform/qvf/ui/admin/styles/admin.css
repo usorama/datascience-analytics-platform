@@ -1,0 +1,324 @@
+/**
+ * QVF Admin Interface Styles
+ * 
+ * Custom CSS for the QVF admin interface with responsive design,
+ * accessibility support, and Tremor React integration.
+ */
+
+/* Base Admin Interface Styles */
+.qvf-admin-app {
+  @apply min-h-screen bg-gray-50;
+}
+
+.qvf-admin-app.dark {
+  @apply bg-gray-900 text-white;
+}
+
+/* Weight Slider Custom Styles */
+.slider-blue::-webkit-slider-thumb {
+  @apply appearance-none w-5 h-5 bg-blue-500 rounded-full cursor-pointer;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5);
+}
+
+.slider-blue::-moz-range-thumb {
+  @apply w-5 h-5 bg-blue-500 rounded-full cursor-pointer border-0;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5);
+}
+
+.slider-green::-webkit-slider-thumb {
+  @apply appearance-none w-5 h-5 bg-green-500 rounded-full cursor-pointer;
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.5);
+}
+
+.slider-green::-moz-range-thumb {
+  @apply w-5 h-5 bg-green-500 rounded-full cursor-pointer border-0;
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.5);
+}
+
+.slider-yellow::-webkit-slider-thumb {
+  @apply appearance-none w-5 h-5 bg-yellow-500 rounded-full cursor-pointer;
+  box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.5);
+}
+
+.slider-yellow::-moz-range-thumb {
+  @apply w-5 h-5 bg-yellow-500 rounded-full cursor-pointer border-0;
+  box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.5);
+}
+
+.slider-red::-webkit-slider-thumb {
+  @apply appearance-none w-5 h-5 bg-red-500 rounded-full cursor-pointer;
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.5);
+}
+
+.slider-red::-moz-range-thumb {
+  @apply w-5 h-5 bg-red-500 rounded-full cursor-pointer border-0;
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.5);
+}
+
+.slider-purple::-webkit-slider-thumb {
+  @apply appearance-none w-5 h-5 bg-purple-500 rounded-full cursor-pointer;
+  box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.5);
+}
+
+.slider-purple::-moz-range-thumb {
+  @apply w-5 h-5 bg-purple-500 rounded-full cursor-pointer border-0;
+  box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.5);
+}
+
+/* Focus styles for accessibility */
+.slider-blue:focus {
+  @apply ring-2 ring-blue-500 ring-opacity-50;
+}
+
+.slider-green:focus {
+  @apply ring-2 ring-green-500 ring-opacity-50;
+}
+
+.slider-yellow:focus {
+  @apply ring-2 ring-yellow-500 ring-opacity-50;
+}
+
+.slider-red:focus {
+  @apply ring-2 ring-red-500 ring-opacity-50;
+}
+
+.slider-purple:focus {
+  @apply ring-2 ring-purple-500 ring-opacity-50;
+}
+
+/* Weight Editor Enhancements */
+.weight-editor-container {
+  @apply space-y-6;
+}
+
+.weight-slider-group {
+  @apply space-y-4 p-4 border border-gray-200 rounded-lg;
+}
+
+.weight-slider-group:hover {
+  @apply border-gray-300 shadow-sm;
+}
+
+.weight-slider-label {
+  @apply flex items-center justify-between mb-2;
+}
+
+.weight-slider-description {
+  @apply text-sm text-gray-600 mb-3;
+}
+
+.weight-input-field {
+  @apply w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+/* Validation Indicators */
+.validation-success {
+  @apply flex items-center space-x-2 text-green-700 bg-green-50 px-3 py-2 rounded-md;
+}
+
+.validation-warning {
+  @apply flex items-center space-x-2 text-yellow-700 bg-yellow-50 px-3 py-2 rounded-md;
+}
+
+.validation-error {
+  @apply flex items-center space-x-2 text-red-700 bg-red-50 px-3 py-2 rounded-md;
+}
+
+/* Configuration List Enhancements */
+.config-list-item {
+  @apply border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-sm cursor-pointer transition-all;
+}
+
+.config-list-item.selected {
+  @apply border-blue-500 bg-blue-50;
+}
+
+.config-list-item:focus-within {
+  @apply ring-2 ring-blue-500 ring-opacity-25;
+}
+
+/* Loading States */
+.loading-skeleton {
+  @apply animate-pulse bg-gray-200 rounded;
+}
+
+.loading-spinner {
+  @apply animate-spin rounded-full border-2 border-gray-300 border-t-blue-600;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .qvf-admin-app {
+    @apply px-4 py-2;
+  }
+  
+  .weight-slider-group {
+    @apply p-3;
+  }
+  
+  .weight-slider-label {
+    @apply flex-col items-start space-y-2;
+  }
+  
+  .config-list-item {
+    @apply p-3;
+  }
+}
+
+/* Dark Theme Support */
+.qvf-admin-app.dark .weight-slider-group {
+  @apply border-gray-700 bg-gray-800;
+}
+
+.qvf-admin-app.dark .weight-slider-group:hover {
+  @apply border-gray-600;
+}
+
+.qvf-admin-app.dark .weight-input-field {
+  @apply border-gray-600 bg-gray-700 text-white;
+}
+
+.qvf-admin-app.dark .config-list-item {
+  @apply border-gray-700 bg-gray-800;
+}
+
+.qvf-admin-app.dark .config-list-item:hover {
+  @apply border-gray-600;
+}
+
+.qvf-admin-app.dark .config-list-item.selected {
+  @apply border-blue-400 bg-blue-900 bg-opacity-50;
+}
+
+/* Animation Enhancements */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.slide-in-up {
+  animation: slideInUp 0.2s ease-out;
+}
+
+/* Button Enhancements */
+.btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors duration-200;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md transition-colors duration-200;
+}
+
+.btn-danger {
+  @apply bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors duration-200;
+}
+
+.btn-success {
+  @apply bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition-colors duration-200;
+}
+
+/* Utility Classes */
+.text-balance {
+  text-wrap: balance;
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 rounded-full;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-full;
+}
+
+/* Print Styles */
+@media print {
+  .qvf-admin-app {
+    @apply bg-white text-black;
+  }
+  
+  .weight-slider-group {
+    @apply border border-gray-400;
+    break-inside: avoid;
+  }
+  
+  /* Hide interactive elements when printing */
+  button,
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger,
+  .btn-success {
+    @apply hidden;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .weight-slider-group {
+    @apply border-2 border-black;
+  }
+  
+  .config-list-item {
+    @apply border-2 border-black;
+  }
+  
+  .validation-success {
+    @apply bg-green-200 border border-green-800;
+  }
+  
+  .validation-warning {
+    @apply bg-yellow-200 border border-yellow-800;
+  }
+  
+  .validation-error {
+    @apply bg-red-200 border border-red-800;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner,
+  .animate-pulse,
+  .animate-spin {
+    animation: none;
+  }
+  
+  .slide-in-right,
+  .slide-in-up {
+    animation: none;
+  }
+  
+  .transition-all,
+  .transition-colors {
+    transition: none;
+  }
+}

@@ -1,0 +1,43 @@
+name: Generative UI Pipeline
+version: "1.0"
+
+models:
+  VHA:
+    primary: ${CLAUDE_VHA_MODEL:-gemini-2.5-pro}
+    fallbacks: [gpt-5-vision, claude-4.1-opus-vision]
+  CA:
+    primary: ${CLAUDE_CA_MODEL:-claude-4.1-opus}
+    fallbacks: [gpt-5]
+  SDG:
+    primary: ${CLAUDE_SDG_MODEL:-gpt-5}
+    fallbacks: [claude-4.1-opus-json]
+  CDS:
+    primary: ${CLAUDE_CDS_MODEL:-claude-4.1-opus}
+    fallbacks: [claude-4.1-sonnet]
+
+artifacts:
+  out_dir: outputs/design_pipeline/${timestamp}
+  files: [critique.md, ui_schema.json, documentation.md]
+
+hitl:
+  enabled: true
+  gates:
+    - name: UX Review
+      after: VHA
+      artifact: critique.md
+      decision_file: vha_review.json
+    - name: Schema Review
+      after: SDG
+      artifact: ui_schema.json
+      decision_file: sdg_review.json
+
+validation:
+  schema_path: docs/schemas/ui_schema.schema.json
+  enforce_manifest: true
+  accessibility_checks: true
+
+prompt:
+  file: .claude/prompts/generative_ui_pipeline_master_prompt.md
+  meta: .claude/prompts/generative_ui_pipeline_master_prompt.meta.json
+
+

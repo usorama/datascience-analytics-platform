@@ -1,0 +1,10 @@
+{
+  "name": "Generative UI Pipeline",
+  "description": "Attach @ui.md (or @ui) and pass a task/context to trigger the Generative UI Pipeline.",
+  "command": "/ui $ARGUMENTS",
+  "aliases": ["ui", "ui.md"],
+  "examples": [
+    "@ui.md Design a KPI dashboard with filters, trend chart, table, and insights panel",
+    "@ui Generate admin settings UI; see @requirements.md"
+  ]
+}

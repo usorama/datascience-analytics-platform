@@ -283,3 +283,62 @@ const useChatSocket = (studentId: string) => {
 - [ ] **Privacy**: COPPA-compliant data handling patterns
 
 Remember: Every interface element should contribute to student success, confidence, and joy in learning. Design with empathy, implement with excellence, and always prioritize the educational experience.
+
+---
+
+## Generative UI Pipeline (Design → JSON → Docs)
+
+Trigger an agentic workflow that analyzes a design input, generates a heuristic critique, derives a component tree mapped to a provided design system, produces a strict `ui_schema.json` (JSON Schema compliant), and emits `documentation.md` from the final JSON.
+
+### Command Signature
+
+```
+ui pipeline \
+  --design-desc "<text description>" \
+  [--image "<url or base64>"] \
+  --heuristics-file "<path to UX heuristics .md>" \
+  --manifest-file "<path to design system manifest .json>" \
+  --brand-tone "<tone>" \
+  --forbidden-words "['word1','word2']" \
+  --schema-file "<path to ui_schema.schema.json>" \
+  [--model.vha <model>] [--model.ca <model>] [--model.sdg <model>] [--model.cds <model>] \
+  [--out "outputs/design_pipeline/<timestamp>"] \
+  [--no-hitl] [--dry-run]
+```
+
+### Arguments
+
+- `--design-desc` (required): Textual description of the UI.
+- `--image` (optional): URL or base64 of a sketch/mockup.
+- `--heuristics-file` (required): Path to UX heuristics text.
+- `--manifest-file` (required): JSON mapping component names → props.
+- `--brand-tone` (required): Brand tone description.
+- `--forbidden-words` (required): JSON array of forbidden words.
+- `--schema-file` (required): Path to JSON Schema used for SDG validation.
+- `--model.*` (optional): Override default model routing for VHA/CA/SDG/CDS.
+- `--out` (optional): Output directory; defaults to timestamped path.
+- `--no-hitl` (optional): Run without human-in-the-loop gates.
+- `--dry-run` (optional): Validate inputs and prompt assembly only.
+
+### Behavior
+
+1. Loads `/.claude/prompts/generative_ui_pipeline_master_prompt.md` and `.meta.json`.
+2. Injects placeholder values from the provided arguments/files.
+3. Routes steps to configured models (overridable via `--model.*`).
+4. Enforces JSON Schema validation for `ui_schema.json`; retries SDG step if invalid.
+5. Enforces no-invented-components: component names/props must exist in manifest.
+6. Runs HITL gates unless `--no-hitl` is supplied, storing decisions next to artifacts.
+7. Writes: `critique.md`, `ui_schema.json`, `documentation.md` to the output dir.
+
+### Example
+
+```
+ui pipeline \
+  --design-desc "KPI dashboard with filters, trend chart, table, and insights panel" \
+  --image "https://example.com/wireframe.png" \
+  --heuristics-file docs/ux/laws_of_ux.md \
+  --manifest-file docs/design_systems/shadcn_manifest.json \
+  --brand-tone "Professional and reassuring" \
+  --forbidden-words "['awesome','super','magic']" \
+  --schema-file docs/schemas/ui_schema.schema.json
+```

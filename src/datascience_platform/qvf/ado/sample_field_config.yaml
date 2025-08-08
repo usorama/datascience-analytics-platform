@@ -1,0 +1,227 @@
+# QVF Field Configuration Template
+# This YAML file defines a comprehensive QVF field configuration for Azure DevOps deployment
+
+name: "qvf_enterprise_v1"
+version: "1.2.0"
+description: "Enterprise QVF field configuration with complete scoring components"
+level: "enterprise"
+
+# Complete QVF field definitions
+field_definitions:
+  QVF.Score:
+    field_type: "decimal"
+    display_name: "QVF Score"
+    description: "Overall Quantified Value Framework prioritization score (0.0-1.0). Higher scores indicate higher priority for implementation."
+    min_value: 0.0
+    max_value: 1.0
+    precision: 4
+    is_required: false
+    default_value: 0.0
+
+  QVF.BusinessValue:
+    field_type: "decimal"
+    display_name: "QVF Business Value"
+    description: "Business value component including revenue impact, cost savings, and time criticality."
+    min_value: 0.0
+    max_value: 1.0
+    precision: 4
+    is_required: false
+    default_value: 0.0
+
+  QVF.StrategicAlignment:
+    field_type: "decimal"
+    display_name: "QVF Strategic Alignment"
+    description: "Strategic alignment component including OKR alignment, vision alignment, and portfolio balance."
+    min_value: 0.0
+    max_value: 1.0
+    precision: 4
+    is_required: false
+    default_value: 0.0
+
+  QVF.CustomerValue:
+    field_type: "decimal"
+    display_name: "QVF Customer Value"
+    description: "Customer value component including user impact, satisfaction impact, and market competitiveness."
+    min_value: 0.0
+    max_value: 1.0
+    precision: 4
+    is_required: false
+    default_value: 0.0
+
+  QVF.Complexity:
+    field_type: "decimal"
+    display_name: "QVF Complexity"
+    description: "Implementation complexity score including technical complexity, dependencies, and resource requirements."
+    min_value: 0.0
+    max_value: 1.0
+    precision: 4
+    is_required: false
+    default_value: 0.5
+
+  QVF.RiskScore:
+    field_type: "decimal"
+    display_name: "QVF Risk Score"
+    description: "Risk assessment score including implementation risk, business risk, technical risk, and compliance risk."
+    min_value: 0.0
+    max_value: 1.0
+    precision: 4
+    is_required: false
+    default_value: 0.5
+
+  QVF.LastCalculated:
+    field_type: "datetime"
+    display_name: "QVF Last Calculated"
+    description: "Timestamp when QVF scores were last calculated for this work item."
+    is_required: false
+
+  QVF.ConfigurationId:
+    field_type: "string"
+    display_name: "QVF Configuration ID"
+    description: "Identifier of the QVF criteria configuration used to calculate scores."
+    max_length: 100
+    is_required: false
+
+  QVF.Confidence:
+    field_type: "decimal"
+    display_name: "QVF Confidence"
+    description: "Confidence level in the calculated QVF score based on data quality and completeness (0.0-1.0)."
+    min_value: 0.0
+    max_value: 1.0
+    precision: 4
+    is_required: false
+    default_value: 1.0
+
+  QVF.DataQuality:
+    field_type: "decimal"
+    display_name: "QVF Data Quality"
+    description: "Assessment of data quality and completeness for QVF scoring (0.0-1.0)."
+    min_value: 0.0
+    max_value: 1.0
+    precision: 4
+    is_required: false
+    default_value: 0.8
+
+# Work item type mappings
+work_item_mappings:
+  Epic:
+    applicable_fields:
+      - "QVF.Score"
+      - "QVF.BusinessValue"
+      - "QVF.StrategicAlignment"
+      - "QVF.CustomerValue"
+      - "QVF.Complexity"
+      - "QVF.RiskScore"
+      - "QVF.Confidence"
+      - "QVF.DataQuality"
+      - "QVF.LastCalculated"
+      - "QVF.ConfigurationId"
+    required_fields:
+      - "QVF.Score"
+      - "QVF.BusinessValue"
+      - "QVF.StrategicAlignment"
+    field_order:
+      - "QVF.Score"
+      - "QVF.BusinessValue"
+      - "QVF.StrategicAlignment"
+      - "QVF.CustomerValue"
+      - "QVF.Complexity"
+      - "QVF.RiskScore"
+      - "QVF.Confidence"
+      - "QVF.DataQuality"
+      - "QVF.LastCalculated"
+      - "QVF.ConfigurationId"
+
+  Feature:
+    applicable_fields:
+      - "QVF.Score"
+      - "QVF.BusinessValue"
+      - "QVF.StrategicAlignment"
+      - "QVF.CustomerValue"
+      - "QVF.Complexity"
+      - "QVF.RiskScore"
+      - "QVF.Confidence"
+      - "QVF.DataQuality"
+      - "QVF.LastCalculated"
+      - "QVF.ConfigurationId"
+    required_fields:
+      - "QVF.Score"
+      - "QVF.BusinessValue"
+    field_order:
+      - "QVF.Score"
+      - "QVF.BusinessValue"
+      - "QVF.StrategicAlignment"
+      - "QVF.CustomerValue"
+      - "QVF.Complexity"
+      - "QVF.RiskScore"
+      - "QVF.Confidence"
+      - "QVF.DataQuality"
+      - "QVF.LastCalculated"
+      - "QVF.ConfigurationId"
+
+  "User Story":
+    applicable_fields:
+      - "QVF.Score"
+      - "QVF.BusinessValue"
+      - "QVF.CustomerValue"
+      - "QVF.Complexity"
+      - "QVF.LastCalculated"
+      - "QVF.ConfigurationId"
+    required_fields:
+      - "QVF.Score"
+    field_order:
+      - "QVF.Score"
+      - "QVF.BusinessValue"
+      - "QVF.CustomerValue"
+      - "QVF.Complexity"
+      - "QVF.LastCalculated"
+      - "QVF.ConfigurationId"
+
+  PIO:
+    applicable_fields:
+      - "QVF.Score"
+      - "QVF.BusinessValue"
+      - "QVF.StrategicAlignment"
+      - "QVF.RiskScore"
+      - "QVF.LastCalculated"
+      - "QVF.ConfigurationId"
+    required_fields:
+      - "QVF.Score"
+      - "QVF.StrategicAlignment"
+    field_order:
+      - "QVF.Score"
+      - "QVF.StrategicAlignment"
+      - "QVF.BusinessValue"
+      - "QVF.RiskScore"
+      - "QVF.LastCalculated"
+      - "QVF.ConfigurationId"
+
+# Deployment configuration
+deployment_settings:
+  batch_size: 100
+  max_concurrent_requests: 10
+  timeout_seconds: 300
+  enable_rollback: true
+  validation_required: true
+  backup_enabled: true
+
+# Validation rules
+validation_rules:
+  required_coverage: 0.9
+  validate_permissions: true
+  validate_existing_data: true
+  check_field_conflicts: true
+
+# Migration settings
+migration_settings:
+  strategy: "shadow_copy"
+  backup_before_migration: true
+  validate_after_migration: true
+  rollback_timeout_minutes: 30
+
+# Configuration metadata
+tags:
+  - "enterprise"
+  - "production"
+  - "qvf"
+  - "complete"
+created_by: "QVF System"
