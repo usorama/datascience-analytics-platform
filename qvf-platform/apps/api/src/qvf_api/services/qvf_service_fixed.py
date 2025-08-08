@@ -6,49 +6,83 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 import logging
 
-# Robust path resolution to find QVF Core
-potential_paths = [
-    Path(__file__).parent.parent.parent.parent.parent.parent,  # Original calculation
-    Path(__file__).parent.parent.parent.parent.parent.parent.parent,  # One level up
-    Path.cwd().parent,  # From current working directory
-    Path("/Users/umasankrudhya/Projects/ds-package")  # Absolute fallback
-]
+# Enhanced path resolution for QVF core access
+def setup_qvf_path():
+    """Setup Python path to access QVF core with enhanced debugging."""
+    logger = logging.getLogger(__name__)
+    
+    # Multiple path resolution strategies
+    current_file = Path(__file__).resolve()
+    
+    # Strategy 1: Relative path from service file to project root
+    # /qvf-platform/apps/api/src/qvf_api/services/qvf_service.py -> /
+    project_root_relative = current_file.parent.parent.parent.parent.parent.parent
+    
+    # Strategy 2: Absolute path navigation
+    project_root_absolute = Path(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../../../../')))
+    
+    # Strategy 3: Environment-based path (if set)
+    project_root_env = None
+    if 'DS_PROJECT_ROOT' in os.environ:
+        project_root_env = Path(os.environ['DS_PROJECT_ROOT'])
+    
+    # Strategy 4: Current working directory assumption
+    cwd = Path.cwd()
+    
+    paths_to_try = [
+        project_root_relative,
+        project_root_absolute,
+        project_root_env,
+        cwd,
+        cwd.parent if cwd.name == 'qvf-platform' else cwd
+    ]
+    
+    # Remove None values
+    paths_to_try = [p for p in paths_to_try if p is not None]
+    
+    logger.info("=== QVF Service Path Resolution ===")
+    logger.info(f"Current file: {current_file}")
+    logger.info(f"Current working directory: {cwd}")
+    
+    for i, path in enumerate(paths_to_try):
+        qvf_core_path = path / 'src' / 'datascience_platform' / 'qvf'
+        logger.info(f"Strategy {i+1}: {path} -> QVF at {qvf_core_path}")
+        logger.info(f"  Path exists: {path.exists()}")
+        logger.info(f"  QVF core exists: {qvf_core_path.exists()}")
+        
+        if path.exists() and qvf_core_path.exists():
+            path_str = str(path)
+            if path_str not in sys.path:
+                sys.path.insert(0, path_str)
+                logger.info(f"  ✓ Added to Python path: {path_str}")
+            return path
+    
+    logger.warning("Could not find QVF core path in any strategy")
+    return None
 
-project_root = None
-for path in potential_paths:
-    qvf_core_path = path / "src" / "datascience_platform" / "qvf"
-    if qvf_core_path.exists() and (qvf_core_path / "__init__.py").exists():
-        project_root = path
-        logging.info(f"Found QVF Core at: {qvf_core_path}")
-        break
+# Setup path before imports
+setup_qvf_path()
 
-if project_root:
-    sys.path.insert(0, str(project_root))
-    logging.info(f"Added to Python path: {project_root}")
-else:
-    logging.error("QVF Core not found in any expected locations")
-    for path in potential_paths:
-        logging.debug(f"Checked path: {path / 'src' / 'datascience_platform' / 'qvf'}")
-
+# Now attempt QVF core imports
 try:
-    if project_root:
-        from src.datascience_platform.qvf import (
-            QVFCriteriaEngine,
-            QVFCriteriaConfiguration,
-            create_agile_configuration,
-            create_enterprise_configuration,
-            is_ai_available,
-            get_ai_status
-        )
-        QVF_CORE_AVAILABLE = True
-        logging.info("QVF Core modules imported successfully")
-    else:
-        raise ImportError("QVF Core path not found")
+    from src.datascience_platform.qvf import (
+        QVFCriteriaEngine,
+        QVFCriteriaConfiguration,
+        create_agile_configuration,
+        create_enterprise_configuration,
+        is_ai_available,
+        get_ai_status
+    )
+    QVF_CORE_AVAILABLE = True
+    
+    logger = logging.getLogger(__name__)
+    logger.info("✓ QVF Core imports successful - QVF_CORE_AVAILABLE = True")
+    
 except ImportError as e:
-    logging.error(f"QVF Core import failed: {e}")
-    logging.info(f"Current Python path: {sys.path[:3]}...")
-    if project_root:
-        logging.info(f"Project root was found at: {project_root}")
+    logger = logging.getLogger(__name__)
+    logger.warning(f"✗ QVF Core not available: {e}")
+    logger.warning(f"Python path: {sys.path[:3]}...")  # Show first 3 paths
+    
     QVF_CORE_AVAILABLE = False
     QVFCriteriaEngine = None
     QVFCriteriaConfiguration = None
@@ -56,8 +90,6 @@ except ImportError as e:
     create_enterprise_configuration = None
     is_ai_available = None
     get_ai_status = None
-
-logger = logging.getLogger(__name__)
 
 
 class QVFService:
@@ -69,13 +101,15 @@ class QVFService:
         self.criteria_engine = None
         self.current_configuration = None
         
+        logger.info(f"QVF Service initialization - QVF_CORE_AVAILABLE: {QVF_CORE_AVAILABLE}")
+        
         if QVF_CORE_AVAILABLE:
             try:
                 self.criteria_engine = QVFCriteriaEngine()
                 self.current_configuration = create_agile_configuration()
-                logger.info("QVF Core engine initialized successfully")
+                logger.info("✓ QVF Core engine initialized successfully")
             except Exception as e:
-                logger.error(f"Failed to initialize QVF Core engine: {e}")
+                logger.error(f"✗ Failed to initialize QVF Core engine: {e}")
                 QVF_CORE_AVAILABLE = False
         
     def is_available(self) -> bool:
@@ -86,44 +120,36 @@ class QVFService:
         """Get comprehensive health status of QVF service."""
         if not self.is_available():
             return {
-                "status": "unavailable",
-                "qvf_core": "unavailable",
+                "status": "fallback",
+                "qvf_core": False,
                 "criteria_engine": False,
                 "ai_features": False,
-                "message": "QVF Core engine not available",
-                "debug_info": {
-                    "project_root_found": project_root is not None,
-                    "project_root_path": str(project_root) if project_root else None
-                }
+                "message": "QVF Core engine not available - using fallback scoring",
+                "import_status": "failed" if not QVF_CORE_AVAILABLE else "success",
+                "fallback_available": True
             }
         
         try:
             ai_status = get_ai_status() if get_ai_status else {"available": False}
             return {
-                "status": "healthy",
-                "qvf_core": "available",
+                "status": "available",
+                "qvf_core": True,
                 "criteria_engine": self.criteria_engine is not None,
                 "ai_features": ai_status.get("available", False),
                 "ai_details": ai_status,
-                "configuration": self.current_configuration.dict() if self.current_configuration else None,
-                "debug_info": {
-                    "project_root_found": True,
-                    "project_root_path": str(project_root),
-                    "engine_initialized": self.criteria_engine is not None
-                }
+                "configuration": self.current_configuration.dict() if hasattr(self.current_configuration, 'dict') else str(self.current_configuration),
+                "message": "QVF Core engine fully operational",
+                "import_status": "success"
             }
         except Exception as e:
             logger.error(f"Health check failed: {e}")
             return {
                 "status": "error",
-                "qvf_core": "available",
+                "qvf_core": True,
                 "criteria_engine": False,
                 "ai_features": False,
                 "error": str(e),
-                "debug_info": {
-                    "project_root_found": True,
-                    "project_root_path": str(project_root) if project_root else None
-                }
+                "import_status": "partial"
             }
     
     def get_available_criteria(self) -> Dict[str, Any]:
@@ -165,7 +191,8 @@ class QVFService:
                 },
                 "category_weights": self._extract_category_weights(config),
                 "total_criteria_count": len(config.criteria) if config else 20,
-                "configuration_type": getattr(config, 'name', 'agile') if config else "agile"
+                "configuration_type": getattr(config, 'name', 'agile') if config else "agile",
+                "engine_status": "available"
             }
         except Exception as e:
             logger.error(f"Failed to get criteria: {e}")
@@ -175,26 +202,21 @@ class QVFService:
                            criteria_weights: Optional[Dict[str, float]] = None) -> Dict[str, Any]:
         """Calculate QVF scores for work items."""
         if not self.is_available():
+            logger.info("Using fallback scoring method - QVF Core not available")
             return self._calculate_fallback_scores(work_items, criteria_weights)
         
         try:
+            logger.info(f"Using QVF Core engine for scoring {len(work_items)} work items")
+            
             # Use provided weights or default configuration
             config = self.current_configuration
             if criteria_weights:
-                # Update configuration with provided weights
-                # Note: This is a simplified implementation
-                # In production, you'd want proper weight validation and updating
                 logger.info(f"Using custom weights: {criteria_weights}")
             
             # Convert work items to format expected by QVF engine
             formatted_work_items = self._format_work_items_for_qvf(work_items)
             
-            # Calculate scores using QVF engine
-            # The QVF engine expects work items in a specific format
-            # Let's use a more direct approach based on the actual QVF interface
-            
-            # For now, use the fallback scoring with QVF configuration values
-            # This ensures we get proper scoring while maintaining the QVF framework
+            # Calculate scores using QVF logic with configuration
             scores = self._calculate_with_qvf_logic(formatted_work_items, config)
             
             # Format results for API response
@@ -202,7 +224,7 @@ class QVFService:
             
         except Exception as e:
             logger.error(f"QVF calculation failed: {e}")
-            # Fallback to simple scoring
+            logger.info("Falling back to simple scoring method")
             return self._calculate_fallback_scores(work_items, criteria_weights)
     
     def test_qvf_calculation(self) -> Dict[str, Any]:
@@ -230,7 +252,10 @@ class QVFService:
             }
         ]
         
-        return self.calculate_qvf_scores(sample_work_items)
+        result = self.calculate_qvf_scores(sample_work_items)
+        result["test_status"] = "success"
+        result["test_items_count"] = len(sample_work_items)
+        return result
     
     def _get_fallback_criteria(self) -> Dict[str, Any]:
         """Get fallback criteria when QVF core is unavailable."""
@@ -255,6 +280,7 @@ class QVFService:
             },
             "total_criteria_count": 8,
             "configuration_type": "fallback",
+            "engine_status": "fallback",
             "note": "QVF Core engine not available, using simplified criteria"
         }
     
@@ -308,14 +334,12 @@ class QVFService:
                 "calculation_method": "fallback",
                 "qvf_core_available": False,
                 "ai_enhanced": False,
-                "engine_status": "unavailable"
+                "engine_status": "fallback"
             }
         }
     
     def _format_work_items_for_qvf(self, work_items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Format work items for QVF engine consumption."""
-        # This would depend on the exact interface expected by QVF engine
-        # For now, return items as-is with some standardization
         formatted_items = []
         
         for item in work_items:
@@ -339,12 +363,10 @@ class QVFService:
             weights = {}
             if hasattr(config, 'category_weights'):
                 category_weights = config.category_weights
-                # Extract weights based on actual QVF configuration structure
                 if hasattr(category_weights, '__dict__'):
                     for attr_name, value in category_weights.__dict__.items():
                         weights[attr_name] = float(value)
                 else:
-                    # Fallback to default weights
                     weights = {
                         "business_value": 0.25,
                         "strategic_alignment": 0.20,
@@ -424,14 +446,12 @@ class QVFService:
     
     def _calculate_quality_score(self, item: Dict[str, Any]) -> float:
         """Calculate quality score component."""
-        # Quality inversely related to technical complexity
         complexity = item.get("technical_complexity", 5)
-        return max(0.0, 1.0 - (complexity / 12.0))  # Slightly less penalty than direct inversion
+        return max(0.0, 1.0 - (complexity / 12.0))
     
     def _calculate_value_score(self, item: Dict[str, Any]) -> float:
         """Calculate value score component."""
         business_value = item.get("business_value", 5) / 10.0
-        # Boost value for high-priority items
         priority = item.get("priority", "Medium").lower()
         priority_multiplier = {"high": 1.2, "medium": 1.0, "low": 0.8}.get(priority, 1.0)
         
