@@ -29,11 +29,14 @@ interface ExtendedWorkItem {
   risk_level: number
   qvf_score?: number
   priority_tier?: 'High' | 'Medium' | 'Low'
-  work_item_type?: 'Epic' | 'Feature' | 'User Story' | 'Task'
+  work_item_type?: string
   parent_id?: string
   state?: string
   assigned_to?: string
   children?: ExtendedWorkItem[]
+  dependencies?: string[]
+  created_date?: string
+  modified_date?: string
 }
 
 interface WorkItemHierarchyProps {
@@ -265,7 +268,7 @@ export function WorkItemHierarchy({
   
   // Build hierarchy from flat list
   const buildHierarchy = (items: ExtendedWorkItem[]): ExtendedWorkItem[] => {
-    const itemMap = new Map(items.map(item => [item.id, { ...item, children: [] }]))
+    const itemMap = new Map(items.map(item => [item.id, { ...item, children: [] as ExtendedWorkItem[] }]))
     const rootItems: ExtendedWorkItem[] = []
     
     items.forEach(item => {

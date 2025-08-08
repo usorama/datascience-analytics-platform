@@ -2,9 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  experimental: {
-    appDir: true,
-  },
+  output: 'standalone',
   env: {
     QVF_API_URL: process.env.QVF_API_URL || 'http://localhost:8000',
   },

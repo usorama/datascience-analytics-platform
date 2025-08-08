@@ -12,9 +12,18 @@ interface ExtendedWorkItem {
   business_value: number
   technical_complexity: number
   story_points: number
-  priority: string
+  priority: 'High' | 'Medium' | 'Low'
+  risk_level: number
   qvf_score?: number
+  priority_tier?: 'High' | 'Medium' | 'Low'
+  children?: ExtendedWorkItem[]
+  parent_id?: string
   work_item_type?: string
+  dependencies?: string[]
+  state?: string
+  assigned_to?: string
+  created_date?: string
+  modified_date?: string
 }
 
 interface ExportDialogProps {

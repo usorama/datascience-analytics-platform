@@ -19,7 +19,7 @@ import {
   Trash2,
   ChevronRight,
   ChevronDown,
-  DragHandleDots2
+  GripVertical
 } from 'lucide-react'
 import { WorkItemHierarchy } from './work-item-hierarchy'
 import { WorkItemEditor } from './work-item-editor'
@@ -33,8 +33,9 @@ interface ExtendedWorkItem extends WorkItem {
   priority_tier?: 'High' | 'Medium' | 'Low'
   children?: ExtendedWorkItem[]
   parent_id?: string
-  work_item_type?: 'Epic' | 'Feature' | 'User Story' | 'Task'
+  work_item_type?: string
   dependencies?: string[]
+  risk_level: number
 }
 
 interface WorkItemFilters {

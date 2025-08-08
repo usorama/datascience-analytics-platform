@@ -9,12 +9,14 @@ interface ProtectedRouteProps {
   children: React.ReactNode
   requiredRole?: string
   allowedRoutes?: string[]
+  allowedRoles?: string[]
 }
 
 export function ProtectedRoute({ 
   children, 
   requiredRole, 
-  allowedRoutes 
+  allowedRoutes,
+  allowedRoles
 }: ProtectedRouteProps) {
   const router = useRouter()
   const { user, isAuthenticated, isLoading } = useAuthStore()
@@ -34,6 +36,12 @@ export function ProtectedRoute({
         return
       }
 
+      // Check allowed roles
+      if (allowedRoles && !allowedRoles.includes(user.role)) {
+        router.push('/unauthorized')
+        return
+      }
+
       // Check route-based permissions
       if (allowedRoutes) {
         const currentPath = window.location.pathname
@@ -47,7 +55,7 @@ export function ProtectedRoute({
         }
       }
     }
-  }, [user, isAuthenticated, isLoading, router, requiredRole, allowedRoutes])
+  }, [user, isAuthenticated, isLoading, router, requiredRole, allowedRoutes, allowedRoles])
 
   // Show loading spinner while checking authentication
   if (isLoading || !isAuthenticated) {

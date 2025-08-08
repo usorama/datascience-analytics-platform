@@ -96,8 +96,8 @@ export function WorkItemFilters({ filters, onFiltersChange, workItems }: WorkIte
               {uniqueTypes.map(type => (
                 <div key={type} className="flex items-center space-x-2">
                   <Checkbox
-                    checked={filters.type.includes(type)}
-                    onCheckedChange={() => toggleArrayFilter('type', type, filters.type)}
+                    checked={filters.type.includes(type!)}
+                    onCheckedChange={() => toggleArrayFilter('type', type!, filters.type)}
                   />
                   <span className="text-sm">{type}</span>
                 </div>
@@ -112,8 +112,8 @@ export function WorkItemFilters({ filters, onFiltersChange, workItems }: WorkIte
               {uniqueStatuses.map(status => (
                 <div key={status} className="flex items-center space-x-2">
                   <Checkbox
-                    checked={filters.status.includes(status)}
-                    onCheckedChange={() => toggleArrayFilter('status', status, filters.status)}
+                    checked={filters.status.includes(status!)}
+                    onCheckedChange={() => toggleArrayFilter('status', status!, filters.status)}
                   />
                   <span className="text-sm">{status}</span>
                 </div>
@@ -128,8 +128,8 @@ export function WorkItemFilters({ filters, onFiltersChange, workItems }: WorkIte
               {uniqueAssignees.map(assignee => (
                 <div key={assignee} className="flex items-center space-x-2">
                   <Checkbox
-                    checked={filters.assignee.includes(assignee)}
-                    onCheckedChange={() => toggleArrayFilter('assignee', assignee, filters.assignee)}
+                    checked={filters.assignee.includes(assignee!)}
+                    onCheckedChange={() => toggleArrayFilter('assignee', assignee!, filters.assignee)}
                   />
                   <span className="text-sm">{assignee}</span>
                 </div>
