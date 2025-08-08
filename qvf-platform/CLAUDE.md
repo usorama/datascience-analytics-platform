@@ -1,11 +1,34 @@
 # QVF Platform - Application Structure
 
 ## Overview
-Modern, production-ready application structure for the Quality Value Framework (QVF) Platform. Built with Next.js 14, FastAPI, and TypeScript in a monorepo architecture.
+**ARCHITECTURE STATUS**: Monorepo structure created but minimally implemented. QVF backend remains in traditional Python package structure.
 
 **Created**: August 8, 2025  
-**Architecture**: Monorepo with symlinked core engine preservation  
-**Purpose**: Scalable application structure for QVF enterprise deployment
+**Architecture**: Planned monorepo with symlinked core engine preservation  
+**Current Reality**: Structure exists, implementation incomplete (~10% complete)
+**Purpose**: Intended scalable application structure for QVF enterprise deployment
+
+## ⚠️ **CRITICAL: REALITY VS PLAN**
+
+### **Current State Assessment (August 8, 2025)**
+- **Directory Structure**: ✅ Created (monorepo folders exist)
+- **API Implementation**: ⚠️ Minimal (310 lines of Python, basic FastAPI setup)
+- **Web Implementation**: ❌ Skeletal (66 lines of TypeScript, no functional components)
+- **Shared Types**: ⚠️ Basic structure only
+- **Database**: ❌ Not implemented
+- **Authentication**: ❌ Not implemented
+
+### **Functional QVF Backend Location**
+- **Active Development**: `/src/datascience_platform/qvf/` (9,852 lines of code)
+- **ADO Integration**: Fully implemented with test suite
+- **QVF Scoring**: Core algorithms complete
+- **AI Integration**: Ollama manager and semantic analysis ready
+
+### **Architecture Decision Required**
+**Before frontend development can proceed, team must decide**:
+1. **Complete monorepo migration** (move backend to qvf-platform/apps/api/) - 40+ SP effort
+2. **Keep hybrid approach** (backend in datascience_platform, frontend in qvf-platform) - 0 SP effort
+3. **Abandon monorepo** (build frontend in datascience_platform/qvf/ui/) - minimal effort
 
 ## Project Structure
 ```
@@ -76,31 +99,36 @@ qvf-platform/
 
 ## Development Workflow
 
+### ⚠️ **CURRENT LIMITATIONS**
+**These commands are defined but not fully functional until architecture decision is made.**
+
 ### Installation
 ```bash
-# Install monorepo dependencies
+# Install monorepo dependencies (basic structure only)
 pnpm install
 
-# Install Python API dependencies
+# Install Python API dependencies (minimal FastAPI setup)
 pnpm run install:api
 
-# Install sync service dependencies
-pnpm run install:sync
+# NOTE: Functional QVF backend is in /src/datascience_platform/qvf/
+cd ../
+pip install -e .
 ```
 
 ### Development Commands
 ```bash
-# Start both frontend and backend
+# ❌ NOT FUNCTIONAL - requires implementation
 pnpm run dev
 
-# Start individual services
-pnpm run dev:web    # Next.js on port 3006
-pnpm run dev:api    # FastAPI on port 8000
+# ❌ MINIMAL - basic web structure only
+pnpm run dev:web    # Next.js on port 3006 (skeleton only)
 
-# Build and test
-pnpm run build
-pnpm run typecheck
-pnpm run lint
+# ⚠️ MINIMAL - basic FastAPI setup
+pnpm run dev:api    # FastAPI on port 8000 (not connected to QVF backend)
+
+# ✅ WORKING QVF BACKEND
+cd ../src/datascience_platform/qvf/
+python -m qvf --help
 ```
 
 ### API Development

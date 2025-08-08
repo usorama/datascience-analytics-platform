@@ -7,10 +7,21 @@
 
 **Project Scope**: Complete QVF application focused on ADO work item management and core prioritization
 **Target**: 4 core dashboards + ADO work item management + basic authentication + QVF scoring  
-**Timeline**: 4-5 development days (120 SP total) - REDUCED SCOPE
+**Timeline**: ⚠️ **TIMELINE BLOCKED** - Architecture decision required before development can proceed
 **Method**: BMAD with story decomposition and agent orchestration  
-**Current State**: Backend QVF engine complete, focusing on ADO-only features for v1.0 MVP
-**v2.0 Features**: External API integrations, advanced authentication, skills management moved to future release
+**Current Reality**: Backend QVF engine 75% complete, monorepo structure exists but frontend not implemented
+**Critical Blocker**: Must resolve backend/frontend architecture before any frontend development
+
+## ⚠️ **ARCHITECTURE PREREQUISITES REQUIRED**
+
+**Before any frontend development can begin**:
+1. **Architecture Decision**: Choose between monorepo completion, hybrid approach, or traditional structure
+2. **Backend API Layer**: Create functional REST API endpoints connecting to existing QVF engine
+3. **Authentication Framework**: Implement basic auth system (currently 0% complete)
+4. **Database Layer**: Set up data persistence for user sessions and QVF calculations
+5. **WebSocket Infrastructure**: Required for real-time QVF scoring and collaboration features
+
+**Estimated Prerequisites**: 40-60 SP (6-8 development days) before frontend work can proceed
 
 ---
 
@@ -55,29 +66,40 @@
 
 ## **Sprint Structure Overview**
 
+### **PREREQUISITE SPRINT 0: Infrastructure Setup (3-4 Days - 50 SP)**
+- **Focus**: ⚠️ **CRITICAL PREREQUISITE** - Must complete before frontend development
+- **Deliverables**: Architecture decision, backend API layer, authentication system, database setup
+- **Agent Target**: backend-architect + full-stack-developer
+- **Success Criteria**: Functional API endpoints, authentication working, frontend can connect to backend
+- **Status**: **REQUIRED BEFORE ANY FRONTEND WORK**
+
 ### **Sprint 1: Executive & Product Owner ADO Dashboards (1.5 Days - 40 SP)**
 - **Focus**: Core stakeholder interfaces for ADO data
+- **Status**: ⚠️ **BLOCKED** - Cannot start until Sprint 0 complete
+- **Dependencies**: ❌ Backend API, ❌ Authentication, ❌ WebSocket infrastructure
 - **Deliverables**: Executive ADO analytics dashboard, Product Owner epic planning dashboard
 - **Agent Target**: frontend-developer + ui-designer coordination
-- **Success Criteria**: C-Suite and PO can view ADO portfolio analytics and plan epics
 
 ### **Sprint 2: Scrum Master Dashboard & Stakeholder Interface (1.5 Days - 35 SP)**  
 - **Focus**: Team management and prioritization workflows
+- **Status**: ⚠️ **BLOCKED** - Requires Sprint 0 + Sprint 1 completion
+- **Dependencies**: ❌ Real-time infrastructure, ❌ QVF calculation API
 - **Deliverables**: SM team dashboard with ADO data, Stakeholder comparison interface
 - **Agent Target**: frontend-developer with QVF backend integration
-- **Success Criteria**: Teams can view ADO metrics and conduct QVF prioritization sessions
 
 ### **Sprint 3: ADO Work Item Management & Basic Authentication (1.5 Days - 35 SP)**
 - **Focus**: Core ADO work management and basic security
+- **Status**: ⚠️ **BLOCKED** - Authentication system must exist first
+- **Dependencies**: ❌ Authentication framework, ❌ Work item CRUD API
 - **Deliverables**: Hierarchical ADO work item UI, basic authentication system
 - **Agent Target**: full-stack-developer
-- **Success Criteria**: Users can manage ADO work items with QVF scoring and basic security
 
 ### **Sprint 4: QVF Analytics Engine & Polish (0.5 Days - 10 SP)**
 - **Focus**: QVF calculation optimization and UI polish
+- **Status**: ⚠️ **BLOCKED** - Requires all previous sprints
+- **Dependencies**: ❌ Complete frontend implementation, ❌ Performance optimization
 - **Deliverables**: Optimized QVF scoring, basic reporting, final UI polish
-- **Agent Target**: backend-architect + frontend-developer  
-- **Success Criteria**: Real-time QVF calculations perform well, system ready for ADO-only deployment
+- **Agent Target**: backend-architect + frontend-developer
 
 ---
 

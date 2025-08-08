@@ -3,17 +3,28 @@
 ## CRITICAL: Protected Directories
 **NEVER delete/modify**: `.claude/` (222 files) and `.bmad-core/` (83 files) - essential for Claude Code multi-agent toolkit
 
+## Automation Status (Redesigned: 2025-08-08)
+✅ **Global Hook Architecture**: Universal orchestrators in `~/.claude/hooks/`
+✅ **Project-Agnostic**: Uses `$CLAUDE_PROJECT_DIR` environment variable
+✅ **Documentation Updates**: Global hook checks for project-specific `documentation_updater.py`
+✅ **Git Checkpoints**: Global hook checks for project-specific `task-completion-detector.py`
+✅ **No More Errors**: Graceful fallback when project scripts don't exist
+
 ## Project Overview
 Production-ready ML analytics platform with GPU acceleration, enterprise Agile metrics, and TypeScript/React dashboard generation.
 
-## QVF Platform Architecture (NEW)
-**Status**: Architecture redesign in progress - transitioning to modern application structure
+## QVF Platform Architecture Status
+**Status**: ⚠️ **Architecture Decision Required** - Major gap between documentation and reality identified
 
-The QVF system is being restructured as a **production-ready application platform** with:
-- **Monorepo Architecture**: Clear separation between apps, packages, and services
-- **Modern Stack**: FastAPI backend + Next.js 14 frontend + PostgreSQL database
-- **Type Safety**: End-to-end TypeScript integration with OpenAPI code generation
-- **Scalable Design**: Industry-standard patterns supporting team collaboration
+**Current Reality Assessment (August 8, 2025)**:
+- **Traditional Backend**: `/src/datascience_platform/qvf/` (9,852 lines, 75% complete, production-ready ADO integration)
+- **Monorepo Structure**: `/qvf-platform/` (created but minimal implementation, ~10% complete)
+- **Critical Gap**: Documentation claimed completion vs actual skeleton implementation
+
+**Architecture Decision Required Before Frontend Development**:
+- **Option 1**: Complete monorepo migration (40+ SP effort, 6+ days)
+- **Option 2**: Hybrid approach (preserve backend, build frontend in monorepo, minimal effort)
+- **Option 3**: Traditional approach (build frontend in existing package structure)
 
 ### Planned Structure
 ```
@@ -61,19 +72,39 @@ python3 scripts/performance_benchmark.py
 - **Testing**: `pytest tests/ --cov=src`, component-specific scripts in `scripts/`
 - **Quality**: `black`, `isort`, `flake8`, `mypy` for all code
 
-## QVF Development (Active)
-- **Scope**: 270 story points = ~6 days with Claude Code
-- **Tracking**: `docs/bmad/qvf-progress.md`, sprint plans in `docs/bmad/`
-- **Foundation**: Leverages existing AHP engine (80% complete)
-- **SAFe Agent**: Ollama LLM, ChromaDB vectors, RL coaching
-- **Architecture**: Modern application platform (see ADR-001)
+## QVF Development Status
+- **Total Scope**: 470 story points
+- **Completed**: 125 SP (26.6%) - QVF backend core and monorepo structure created
+- **Remaining**: 345 SP - Architecture decision required before frontend development can proceed
+- **Tracking**: `docs/bmad/qvf-progress.md`, `docs/bmad/qvf-project-status-reality-assessment.md`
+- **Foundation**: QVF backend 75% complete with production-ready ADO integration
+- **Critical Blocker**: Frontend development blocked pending architecture decision
 
-### Migration Status
-- ✅ **Architecture Design**: Complete monorepo structure designed
-- ✅ **Technology Stack**: FastAPI + Next.js + PostgreSQL selected
-- ✅ **API Design**: REST endpoints and data models defined
-- ⏳ **Implementation**: Ready to begin development phases
-- ⏳ **Data Migration**: Scripts and procedures planned
+### Current Implementation Status
+- ✅ **Architecture Design**: Monorepo structure created
+- ⚠️ **Backend Implementation**: 75% complete in traditional structure (`/src/datascience_platform/qvf/`)
+- ❌ **API Integration**: Minimal FastAPI setup, not connected to QVF backend
+- ❌ **Frontend Implementation**: Skeleton only, no functional components
+- ⚠️ **Technology Stack**: Planned but not implemented
+- ⚠️ **Database Layer**: Not implemented in either structure
+
+## Working QVF Backend Location
+
+**Primary Development Location**: `/src/datascience_platform/qvf/`
+- **Lines of Code**: 9,852 across 45 Python files
+- **ADO Integration**: Fully implemented with comprehensive test suite
+- **QVF Scoring**: Core algorithms complete and tested
+- **AI Integration**: Ollama manager and semantic analysis ready
+- **Status**: 75% complete, production-ready for ADO integration
+
+**Usage**:
+```bash
+# Working QVF CLI
+python -m src.datascience_platform.qvf --help
+
+# ADO Integration Testing
+python src/datascience_platform/qvf/ado/tests/run_integration_tests.py
+```
 
 ## Critical Rules
 1. **Read before write**: Always examine existing code patterns

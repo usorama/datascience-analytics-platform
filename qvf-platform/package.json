@@ -10,19 +10,24 @@
   "scripts": {
     "dev": "concurrently \"pnpm run dev:api\" \"pnpm run dev:web\"",
     "dev:web": "pnpm --filter @qvf/web dev",
-    "dev:api": "cd apps/api && python -m uvicorn qvf_api.main:app --reload --port 8000",
+    "dev:api": "cd apps/api && PYTHONPATH=src python3 -m uvicorn qvf_api.main:app --reload --port 8000",
     "build": "pnpm --filter @qvf/web build",
     "build:types": "pnpm --filter @qvf/shared-types build",
     "lint": "pnpm --filter @qvf/web lint",
     "typecheck": "pnpm --filter @qvf/web typecheck",
     "test": "pnpm --recursive test",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "screenshots": "playwright test tests/qvf-screenshots.spec.ts",
     "clean": "pnpm --recursive clean",
     "install:api": "cd apps/api && pip install -r requirements.txt",
     "install:sync": "cd services/ado-sync && pip install -r requirements.txt"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
+    "@playwright/test": "^1.54.2",
     "@types/node": "^20.14.10",
+    "concurrently": "^8.2.2",
+    "playwright": "^1.54.2",
     "typescript": "^5.5.3"
   },
   "engines": {
