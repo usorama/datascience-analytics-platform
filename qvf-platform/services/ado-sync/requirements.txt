@@ -1,0 +1,5 @@
+asyncio
+aiohttp==3.9.1
+python-dateutil==2.8.2
+pydantic==2.5.0
+requests==2.31.0

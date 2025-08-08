@@ -34,6 +34,26 @@ except ImportError:
     ChartBuilder = None
     _DASHBOARD_AVAILABLE = False
 
+# Import QVF module
+try:
+    from datascience_platform.qvf import (
+        QVFCriteriaEngine,
+        QVFCriteriaConfiguration,
+        FinancialCalculator,
+        create_enterprise_configuration,
+        create_agile_configuration,
+        is_ai_available
+    )
+    _QVF_AVAILABLE = True
+except ImportError:
+    QVFCriteriaEngine = None
+    QVFCriteriaConfiguration = None
+    FinancialCalculator = None
+    create_enterprise_configuration = None
+    create_agile_configuration = None
+    is_ai_available = None
+    _QVF_AVAILABLE = False
+
 __all__ = [
     "__version__",
     "__author__",
@@ -55,4 +75,15 @@ if _DASHBOARD_AVAILABLE:
     __all__.extend([
         "DashboardGenerator",
         "ChartBuilder",
+    ])
+
+# Add QVF modules if available
+if _QVF_AVAILABLE:
+    __all__.extend([
+        "QVFCriteriaEngine",
+        "QVFCriteriaConfiguration",
+        "FinancialCalculator",
+        "create_enterprise_configuration",
+        "create_agile_configuration",
+        "is_ai_available",
     ])

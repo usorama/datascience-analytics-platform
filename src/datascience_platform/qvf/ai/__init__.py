@@ -29,14 +29,17 @@ Usage:
 """
 
 from .ollama_manager import OllamaManager, OllamaHealth
-from .semantic import SemanticAnalyzer
+from .semantic import SemanticAnalyzer, SemanticAnalysisResult, BatchAnalysisResult
 from .fallback import FallbackEngine
-from .prompt_templates import QVFPromptTemplates
+from .prompt_templates import QVFPromptTemplates, AnalysisType
 
 __all__ = [
     "OllamaManager",
     "OllamaHealth", 
     "SemanticAnalyzer",
+    "SemanticAnalysisResult",
+    "BatchAnalysisResult",
     "FallbackEngine",
-    "QVFPromptTemplates"
+    "QVFPromptTemplates",
+    "AnalysisType"
 ]

@@ -1,0 +1,32 @@
+{
+  "name": "qvf-platform",
+  "version": "0.1.0",
+  "description": "QVF Platform - Quality Value Framework for Agile Teams",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"pnpm run dev:api\" \"pnpm run dev:web\"",
+    "dev:web": "pnpm --filter @qvf/web dev",
+    "dev:api": "cd apps/api && python -m uvicorn qvf_api.main:app --reload --port 8000",
+    "build": "pnpm --filter @qvf/web build",
+    "build:types": "pnpm --filter @qvf/shared-types build",
+    "lint": "pnpm --filter @qvf/web lint",
+    "typecheck": "pnpm --filter @qvf/web typecheck",
+    "test": "pnpm --recursive test",
+    "clean": "pnpm --recursive clean",
+    "install:api": "cd apps/api && pip install -r requirements.txt",
+    "install:sync": "cd services/ado-sync && pip install -r requirements.txt"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "@types/node": "^20.14.10",
+    "typescript": "^5.5.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

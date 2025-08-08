@@ -6,6 +6,31 @@
 ## Project Overview
 Production-ready ML analytics platform with GPU acceleration, enterprise Agile metrics, and TypeScript/React dashboard generation.
 
+## QVF Platform Architecture (NEW)
+**Status**: Architecture redesign in progress - transitioning to modern application structure
+
+The QVF system is being restructured as a **production-ready application platform** with:
+- **Monorepo Architecture**: Clear separation between apps, packages, and services
+- **Modern Stack**: FastAPI backend + Next.js 14 frontend + PostgreSQL database
+- **Type Safety**: End-to-end TypeScript integration with OpenAPI code generation
+- **Scalable Design**: Industry-standard patterns supporting team collaboration
+
+### Planned Structure
+```
+qvf-platform/
+├── apps/
+│   ├── api/          # FastAPI backend application
+│   └── web/          # Next.js frontend application
+├── packages/
+│   ├── qvf-core/     # Existing QVF engine (preserved)
+│   ├── shared-types/ # Shared TypeScript/Python types
+│   └── database/     # Database models and migrations
+└── services/
+    └── ado-sync/     # ADO integration service
+```
+
+See `docs/architecture/adr/001-qvf-platform-architecture.md` for complete architectural decisions.
+
 ## Essential Commands
 ```bash
 # CLI Tools (executable scripts)
@@ -41,6 +66,14 @@ python3 scripts/performance_benchmark.py
 - **Tracking**: `docs/bmad/qvf-progress.md`, sprint plans in `docs/bmad/`
 - **Foundation**: Leverages existing AHP engine (80% complete)
 - **SAFe Agent**: Ollama LLM, ChromaDB vectors, RL coaching
+- **Architecture**: Modern application platform (see ADR-001)
+
+### Migration Status
+- ✅ **Architecture Design**: Complete monorepo structure designed
+- ✅ **Technology Stack**: FastAPI + Next.js + PostgreSQL selected
+- ✅ **API Design**: REST endpoints and data models defined
+- ⏳ **Implementation**: Ready to begin development phases
+- ⏳ **Data Migration**: Scripts and procedures planned
 
 ## Critical Rules
 1. **Read before write**: Always examine existing code patterns
@@ -63,9 +96,17 @@ generator = DashboardGenerator(theme="enterprise")
 ```
 
 ## References
-- Detailed architecture: `docs/bmad/technical-architecture-qvf.md`
-- Module docs: Each module has CLAUDE.md with specifics
-- Examples: `examples/` directory with working demos
-- Testing: `scripts/test_*.py` for component validation
+- **Current Architecture**: `docs/bmad/technical-architecture-qvf.md`
+- **New Architecture**: `docs/architecture/adr/001-qvf-platform-architecture.md` 
+- **Module docs**: Each module has CLAUDE.md with specifics
+- **Examples**: `examples/` directory with working demos
+- **Testing**: `scripts/test_*.py` for component validation
+
+### Architecture Documentation
+- **ADR-001**: QVF Platform Application Architecture (monorepo design)
+- **API Design**: REST endpoints, data models, authentication
+- **Migration Plan**: 4-phase transition from current to new structure
+- **Technology Stack**: FastAPI, Next.js, PostgreSQL, Redis decisions
+- **Database Schema**: Personal metrics, QVF sessions, user management
 
 **NOTE**: This is a production system. All changes must meet enterprise standards with full testing and documentation.
