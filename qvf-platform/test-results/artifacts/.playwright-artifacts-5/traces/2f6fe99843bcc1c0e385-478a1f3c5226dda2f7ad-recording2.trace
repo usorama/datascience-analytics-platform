@@ -1,0 +1,13 @@
+{"version":8,"type":"context-options","origin":"library","browserName":"","options":{},"platform":"darwin","wallTime":1754713451755,"monotonicTime":7684.29,"sdkLanguage":"javascript","contextId":"request-context@4cd8222160d0a7a5a7caf033c70d5956","title":"api/integration.spec.ts:69 › QVF Platform API Integration Tests › Authentication API › should return user info with valid token"}
+{"type":"before","callId":"call@24","startTime":7685.047,"class":"APIRequestContext","method":"fetch","params":{"url":"http://localhost:8000/api/v1/auth/me","method":"GET","headers":[{"name":"Authorization","value":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwidXNlcm5hbWUiOiJleGVjdXRpdmUiLCJyb2xlIjoiZXhlY3V0aXZlIiwiZXhwIjoxNzU0NzE1MjQ5LCJpYXQiOjE3NTQ3MTM0NDksImp0aSI6InBkX0FnVENrUk96bEEwQ2I4MTFQbEJqbk5FTmVqNkJWS25qUHZHOS1qZFkifQ.o6wgrNgE-lE95buDbntdR65dzAJHVnHyqdbGcTt07SU"}],"timeout":15000},"stepId":"pw:api@4","beforeSnapshot":"before@call@24"}
+{"type":"log","callId":"call@24","time":7685.262,"message":"→ GET http://localhost:8000/api/v1/auth/me"}
+{"type":"log","callId":"call@24","time":7685.266,"message":"  user-agent: Playwright/1.54.2 (arm64; macOS 15.6) node/23.11"}
+{"type":"log","callId":"call@24","time":7685.268,"message":"  accept: */*"}
+{"type":"log","callId":"call@24","time":7685.27,"message":"  accept-encoding: gzip,deflate,br"}
+{"type":"log","callId":"call@24","time":7685.271,"message":"  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwidXNlcm5hbWUiOiJleGVjdXRpdmUiLCJyb2xlIjoiZXhlY3V0aXZlIiwiZXhwIjoxNzU0NzE1MjQ5LCJpYXQiOjE3NTQ3MTM0NDksImp0aSI6InBkX0FnVENrUk96bEEwQ2I4MTFQbEJqbk5FTmVqNkJWS25qUHZHOS1qZFkifQ.o6wgrNgE-lE95buDbntdR65dzAJHVnHyqdbGcTt07SU"}
+{"type":"log","callId":"call@24","time":7688.558,"message":"← 200 OK"}
+{"type":"log","callId":"call@24","time":7688.563,"message":"  date: Sat, 09 Aug 2025 04:24:11 GMT"}
+{"type":"log","callId":"call@24","time":7688.565,"message":"  server: uvicorn"}
+{"type":"log","callId":"call@24","time":7688.566,"message":"  content-length: 281"}
+{"type":"log","callId":"call@24","time":7688.567,"message":"  content-type: application/json"}
+{"type":"after","callId":"call@24","endTime":7688.602,"result":{"response":{"url":"http://localhost:8000/api/v1/auth/me","status":200,"statusText":"OK","headers":[{"name":"date","value":"Sat, 09 Aug 2025 04:24:11 GMT"},{"name":"server","value":"uvicorn"},{"name":"content-length","value":"281"},{"name":"content-type","value":"application/json"}],"fetchUid":"1daa6acf376439b74716f1969330335e"}},"afterSnapshot":"after@call@24"}

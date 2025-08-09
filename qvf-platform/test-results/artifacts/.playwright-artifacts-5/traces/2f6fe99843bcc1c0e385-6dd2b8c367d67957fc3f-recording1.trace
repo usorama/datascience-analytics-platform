@@ -1,0 +1,15 @@
+{"version":8,"type":"context-options","origin":"library","browserName":"","options":{},"platform":"darwin","wallTime":1754713451748,"monotonicTime":7677.595,"sdkLanguage":"javascript","contextId":"request-context@0e63be6d62648c31af09763c9bc8953f","title":"api/integration.spec.ts:58 › QVF Platform API Integration Tests › Authentication API › should reject invalid credentials"}
+{"type":"before","callId":"call@15","startTime":7678.419,"class":"APIRequestContext","method":"fetch","params":{"url":"http://localhost:8000/api/v1/auth/token","method":"POST","formData":[{"name":"username","value":"invalid_user"},{"name":"password","value":"wrong_password"}],"timeout":15000},"stepId":"pw:api@4","beforeSnapshot":"before@call@15"}
+{"type":"log","callId":"call@15","time":7678.782,"message":"→ POST http://localhost:8000/api/v1/auth/token"}
+{"type":"log","callId":"call@15","time":7678.794,"message":"  user-agent: Playwright/1.54.2 (arm64; macOS 15.6) node/23.11"}
+{"type":"log","callId":"call@15","time":7678.8,"message":"  accept: */*"}
+{"type":"log","callId":"call@15","time":7678.802,"message":"  accept-encoding: gzip,deflate,br"}
+{"type":"log","callId":"call@15","time":7678.804,"message":"  content-type: application/x-www-form-urlencoded"}
+{"type":"log","callId":"call@15","time":7678.806,"message":"  content-length: 45"}
+{"type":"log","callId":"call@15","time":7681.149,"message":"← 401 Unauthorized"}
+{"type":"log","callId":"call@15","time":7681.153,"message":"  date: Sat, 09 Aug 2025 04:24:11 GMT"}
+{"type":"log","callId":"call@15","time":7681.155,"message":"  server: uvicorn"}
+{"type":"log","callId":"call@15","time":7681.156,"message":"  www-authenticate: Bearer"}
+{"type":"log","callId":"call@15","time":7681.158,"message":"  content-length: 43"}
+{"type":"log","callId":"call@15","time":7681.171,"message":"  content-type: application/json"}
+{"type":"after","callId":"call@15","endTime":7681.211,"result":{"response":{"url":"http://localhost:8000/api/v1/auth/token","status":401,"statusText":"Unauthorized","headers":[{"name":"date","value":"Sat, 09 Aug 2025 04:24:11 GMT"},{"name":"server","value":"uvicorn"},{"name":"www-authenticate","value":"Bearer"},{"name":"content-length","value":"43"},{"name":"content-type","value":"application/json"}],"fetchUid":"5e17fc36ff9ef84ce83ab64491b4b540"}},"afterSnapshot":"after@call@15"}

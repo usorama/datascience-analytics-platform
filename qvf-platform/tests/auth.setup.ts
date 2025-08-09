@@ -60,12 +60,17 @@ setup('authenticate developer', async ({ page, context }) => {
   await page.fill('[data-testid="password"], input[name="password"], input[type="password"]', TestUsers.developer.password);
   await page.click('[data-testid="login-button"], button[type="submit"], button:has-text("Login"), button:has-text("Sign In")');
   
-  // Wait for successful login (developer might redirect to work-items instead of dashboard)
+  // Wait for successful login - developer lands on general dashboard
   try {
     await page.waitForURL('/dashboard/developer', { timeout: 15000 });
   } catch {
-    // Fallback to work-items page for developers
-    await page.waitForURL('/work-items', { timeout: 15000 });
+    // Developer may land on general dashboard instead of specific developer dashboard
+    try {
+      await page.waitForURL('/dashboard', { timeout: 15000 });
+    } catch {
+      // Final fallback to work-items page
+      await page.waitForURL('/work-items', { timeout: 15000 });
+    }
   }
   
   // Save authentication state

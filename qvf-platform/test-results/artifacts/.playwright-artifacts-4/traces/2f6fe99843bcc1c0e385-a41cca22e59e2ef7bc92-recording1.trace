@@ -1,0 +1,17 @@
+{"version":8,"type":"context-options","origin":"library","browserName":"","options":{},"platform":"darwin","wallTime":1754713451485,"monotonicTime":7414.642,"sdkLanguage":"javascript","contextId":"request-context@03a3b0756cf3f866d2fda0aa97d605d3","title":"api/integration.spec.ts:139 › QVF Platform API Integration Tests › Work Items API › should fetch work items list"}
+{"type":"before","callId":"call@15","startTime":7415.459,"class":"APIRequestContext","method":"fetch","params":{"url":"http://localhost:8000/api/v1/work-items","method":"GET","headers":[{"name":"Authorization","value":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwidXNlcm5hbWUiOiJwcm9kdWN0X293bmVyIiwicm9sZSI6InByb2R1Y3Rfb3duZXIiLCJleHAiOjE3NTQ3MTUyNDksImlhdCI6MTc1NDcxMzQ0OSwianRpIjoiN3dlSUdkVVcxTjNxcE9KbXpHX3N1MzB2ZUdfRFFtaDZHR2hoZWE1OUNOYyJ9.6_nN60qMyHUTnNF0V8S9l92wRTLqXJr8LWvJy3l8x94"}],"timeout":15000},"stepId":"pw:api@4","beforeSnapshot":"before@call@15"}
+{"type":"log","callId":"call@15","time":7415.772,"message":"→ GET http://localhost:8000/api/v1/work-items"}
+{"type":"log","callId":"call@15","time":7415.777,"message":"  user-agent: Playwright/1.54.2 (arm64; macOS 15.6) node/23.11"}
+{"type":"log","callId":"call@15","time":7415.779,"message":"  accept: */*"}
+{"type":"log","callId":"call@15","time":7415.781,"message":"  accept-encoding: gzip,deflate,br"}
+{"type":"log","callId":"call@15","time":7415.782,"message":"  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwidXNlcm5hbWUiOiJwcm9kdWN0X293bmVyIiwicm9sZSI6InByb2R1Y3Rfb3duZXIiLCJleHAiOjE3NTQ3MTUyNDksImlhdCI6MTc1NDcxMzQ0OSwianRpIjoiN3dlSUdkVVcxTjNxcE9KbXpHX3N1MzB2ZUdfRFFtaDZHR2hoZWE1OUNOYyJ9.6_nN60qMyHUTnNF0V8S9l92wRTLqXJr8LWvJy3l8x94"}
+{"type":"log","callId":"call@15","time":7416.524,"message":"← 307 Temporary Redirect"}
+{"type":"log","callId":"call@15","time":7416.529,"message":"  date: Sat, 09 Aug 2025 04:24:11 GMT"}
+{"type":"log","callId":"call@15","time":7416.531,"message":"  server: uvicorn"}
+{"type":"log","callId":"call@15","time":7416.533,"message":"  content-length: 0"}
+{"type":"log","callId":"call@15","time":7416.535,"message":"  location: http://localhost:8000/api/v1/work-items/"}
+{"type":"log","callId":"call@15","time":7416.734,"message":"→ GET http://localhost:8000/api/v1/work-items/"}
+{"type":"log","callId":"call@15","time":7416.737,"message":"  user-agent: Playwright/1.54.2 (arm64; macOS 15.6) node/23.11"}
+{"type":"log","callId":"call@15","time":7416.739,"message":"  accept: */*"}
+{"type":"log","callId":"call@15","time":7416.74,"message":"  accept-encoding: gzip,deflate,br"}
+{"type":"log","callId":"call@15","time":7416.742,"message":"  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwidXNlcm5hbWUiOiJwcm9kdWN0X293bmVyIiwicm9sZSI6InByb2R1Y3Rfb3duZXIiLCJleHAiOjE3NTQ3MTUyNDksImlhdCI6MTc1NDcxMzQ0OSwianRpIjoiN3dlSUdkVVcxTjNxcE9KbXpHX3N1MzB2ZUdfRFFtaDZHR2hoZWE1OUNOYyJ9.6_nN60qMyHUTnNF0V8S9l92wRTLqXJr8LWvJy3l8x94"}

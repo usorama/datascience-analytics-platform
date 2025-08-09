@@ -1,0 +1,21 @@
+# Minimal Project Configuration for ds-package
+# Only add overrides if different from global defaults
+
+project:
+  name: ds-package
+  type: python
+  description: "DataScience Platform with ML analytics and QVF metrics"
+  
+# Overrides (only if needed)
+overrides:
+  # Documentation patterns specific to this project
+  # doc_patterns:
+  #   - "docs/bmad/**/*.md"
+  #   - "qvf-platform/**/*.md"
+  
+  # Quality thresholds specific to this project  
+  # quality_gates:
+  #   test_coverage: 90  # vs global default
+  #   dod_completion: 100
+  
+# All other behaviors use global defaults from ~/.claude/

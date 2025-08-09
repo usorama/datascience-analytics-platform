@@ -1,0 +1,6 @@
+{"version":8,"type":"context-options","origin":"library","browserName":"","options":{},"platform":"darwin","wallTime":1754713451773,"monotonicTime":7702.678,"sdkLanguage":"javascript","contextId":"request-context@2c9e2c9fd2748c95b64d8b36ac940f4b","title":"api/integration.spec.ts:106 › QVF Platform API Integration Tests › Health Check API › should return system health status"}
+{"type":"before","callId":"call@52","startTime":7703.335,"class":"APIRequestContext","method":"fetch","params":{"url":"http://localhost:8000/health","method":"GET","timeout":15000},"stepId":"pw:api@4","beforeSnapshot":"before@call@52"}
+{"type":"log","callId":"call@52","time":7703.551,"message":"→ GET http://localhost:8000/health"}
+{"type":"log","callId":"call@52","time":7703.554,"message":"  user-agent: Playwright/1.54.2 (arm64; macOS 15.6) node/23.11"}
+{"type":"log","callId":"call@52","time":7703.555,"message":"  accept: */*"}
+{"type":"log","callId":"call@52","time":7703.556,"message":"  accept-encoding: gzip,deflate,br"}
