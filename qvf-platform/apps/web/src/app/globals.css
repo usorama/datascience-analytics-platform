@@ -183,9 +183,26 @@
     box-shadow: 0 0 40px var(--accent-glow);
   }
   
-  /* Smooth transitions */
+  /* Smooth transitions - enhanced for theme changes */
   * {
-    transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    transition: 
+      border-color 0.3s ease,
+      background-color 0.3s ease,
+      color 0.3s ease,
+      box-shadow 0.3s ease,
+      opacity 0.3s ease,
+      transform 0.3s ease;
+  }
+  
+  /* Specific smooth transitions for theme-sensitive elements */
+  body,
+  .bg-background,
+  .bg-card,
+  .bg-secondary,
+  .text-foreground,
+  .text-muted-foreground,
+  .border {
+    transition-duration: 0.3s;
   }
   
   /* Typography improvements */
@@ -218,6 +235,24 @@
     background: var(--accent-primary);
   }
   
+  /* Mobile scrollbar improvements */
+  @media (max-width: 768px) {
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    
+    /* Hide scrollbars on mobile but keep functionality */
+    .mobile-scroll-hidden {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    
+    .mobile-scroll-hidden::-webkit-scrollbar {
+      display: none;
+    }
+  }
+  
   /* Animation utilities */
   .animate-fade-in {
     animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
@@ -225,6 +260,19 @@
   
   .animate-slide-up {
     animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .animate-drawer-slide {
+    animation: drawerSlide 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Theme toggle specific animations */
+  .theme-toggle-icon {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  }
+  
+  .theme-toggle-icon.rotating {
+    animation: iconRotate 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   @keyframes fadeIn {
@@ -247,6 +295,85 @@
     }
   }
   
+  @keyframes drawerSlide {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes iconRotate {
+    0% {
+      transform: rotate(0deg) scale(1);
+    }
+    50% {
+      transform: rotate(180deg) scale(0.9);
+    }
+    100% {
+      transform: rotate(360deg) scale(1);
+    }
+  }
+  
+  /* Pulse animation for loading states */
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+  
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  /* Touch and mobile improvements */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Improved mobile button targets */
+  @media (max-width: 768px) {
+    button, 
+    [role="button"], 
+    input[type="button"], 
+    input[type="submit"], 
+    .btn {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    /* Touch-friendly links */
+    a {
+      -webkit-tap-highlight-color: rgba(0, 217, 255, 0.2);
+    }
+  }
+  
+  /* Mobile navigation improvements */
+  @media (max-width: 768px) {
+    /* Ensure mobile drawer is above everything */
+    .mobile-drawer {
+      z-index: 9999 !important;
+    }
+    
+    /* Prevent text selection during swipe */
+    .mobile-drawer * {
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    
+    /* Re-enable text selection for content */
+    .mobile-drawer input, 
+    .mobile-drawer textarea {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+  }
+
   /* Responsive design improvements */
   @media (max-width: 1024px) {
     body {
@@ -283,6 +410,12 @@
       width: 44px;
       height: 44px;
     }
+    
+    /* Better mobile container spacing */
+    .container-mobile {
+      padding-left: 1rem !important;
+      padding-right: 1rem !important;
+    }
   }
 
   @media (max-width: 640px) {
@@ -301,6 +434,54 @@
     
     .mobile-text-xs {
       font-size: 0.75rem !important;
+    }
+    
+    /* Improved small screen navigation */
+    nav .text-2xl {
+      font-size: 1.25rem !important;
+    }
+  }
+  
+  /* Mobile-first responsive utilities */
+  @media (max-width: 480px) {
+    /* Extra small devices */
+    .container {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+    
+    /* Compact mobile drawer */
+    .mobile-drawer {
+      width: 90vw !important;
+    }
+  }
+
+  /* Mobile gesture improvements */
+  @media (hover: none) and (pointer: coarse) {
+    /* Touch devices */
+    :hover {
+      background-color: transparent !important;
+    }
+    
+    /* Use active states instead of hover for touch */
+    button:active,
+    [role="button"]:active,
+    .btn:active {
+      transform: scale(0.98);
+      background-color: var(--accent-medium);
+    }
+  }
+  
+  /* Focus improvements for mobile */
+  @media (max-width: 768px) {
+    :focus {
+      outline: 2px solid var(--accent-primary);
+      outline-offset: 2px;
+    }
+    
+    /* Remove focus outline when using mouse/touch */
+    :focus:not(.focus-visible) {
+      outline: none;
     }
   }
 

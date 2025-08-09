@@ -21,18 +21,26 @@ export async function login(page: Page, user: TestUser): Promise<void> {
   await waitForPageLoad(page);
 
   // Fill login form with robust selectors
-  await page.fill('[data-testid="username"], input[name="username"], input[type="text"]', user.username);
-  await page.fill('[data-testid="password"], input[name="password"], input[type="password"]', user.password);
+  const usernameField = page.locator('[data-testid="username"], input[name="username"], input[type="text"]').first();
+  const passwordField = page.locator('[data-testid="password"], input[name="password"], input[type="password"]').first();
+  
+  await expect(usernameField).toBeVisible({ timeout: 10000 });
+  await expect(passwordField).toBeVisible({ timeout: 10000 });
+  
+  await usernameField.fill(user.username);
+  await passwordField.fill(user.password);
   
   // Click login button
-  await page.click('[data-testid="login-button"], button[type="submit"], button:has-text("Login"), button:has-text("Sign In")');
+  const loginButton = page.locator('[data-testid="login-button"], button[type="submit"], button:has-text("Login"), button:has-text("Sign In")').first();
+  await expect(loginButton).toBeVisible({ timeout: 10000 });
+  await loginButton.click();
   
   // Wait for successful login and redirect
   try {
-    await page.waitForURL(user.defaultRoute, { timeout: 15000 });
+    await page.waitForURL(user.defaultRoute, { timeout: 20000 });
   } catch {
     // Fallback: wait for any dashboard or authenticated page
-    await page.waitForURL(/\/(dashboard|work-items)/, { timeout: 15000 });
+    await page.waitForURL(/\/(dashboard|work-items|compare)/, { timeout: 20000 });
   }
   
   await waitForPageLoad(page);

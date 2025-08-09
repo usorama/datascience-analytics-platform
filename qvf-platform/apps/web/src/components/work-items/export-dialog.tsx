@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { X, Download, FileText, FileSpreadsheet } from 'lucide-react'
+import { X, Download, FileText, FileSpreadsheet, FileOutput } from 'lucide-react'
 
 interface ExtendedWorkItem {
   id: string
@@ -28,12 +28,12 @@ interface ExtendedWorkItem {
 
 interface ExportDialogProps {
   workItems: ExtendedWorkItem[]
-  onExport: (format: 'pdf' | 'excel', items: ExtendedWorkItem[]) => void
+  onExport: (format: 'pdf' | 'excel' | 'csv', items: ExtendedWorkItem[]) => void
   onClose: () => void
 }
 
 export function ExportDialog({ workItems, onExport, onClose }: ExportDialogProps) {
-  const [selectedFormat, setSelectedFormat] = useState<'pdf' | 'excel'>('excel')
+  const [selectedFormat, setSelectedFormat] = useState<'pdf' | 'excel' | 'csv'>('excel')
   const [exporting, setExporting] = useState(false)
   
   const handleExport = async () => {
@@ -67,7 +67,7 @@ export function ExportDialog({ workItems, onExport, onClose }: ExportDialogProps
           {/* Format Selection */}
           <div className="space-y-3">
             <h4 className="font-medium">Export Format</h4>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <Button
                 variant={selectedFormat === 'excel' ? 'default' : 'outline'}
                 className="h-auto p-4 flex flex-col space-y-2"
@@ -89,6 +89,18 @@ export function ExportDialog({ workItems, onExport, onClose }: ExportDialogProps
                 <span className="font-medium">PDF</span>
                 <span className="text-xs text-muted-foreground text-center">
                   Professional report format
+                </span>
+              </Button>
+              
+              <Button
+                variant={selectedFormat === 'csv' ? 'default' : 'outline'}
+                className="h-auto p-4 flex flex-col space-y-2"
+                onClick={() => setSelectedFormat('csv')}
+              >
+                <FileOutput className="h-6 w-6" />
+                <span className="font-medium">CSV</span>
+                <span className="text-xs text-muted-foreground text-center">
+                  Raw data for analysis
                 </span>
               </Button>
             </div>

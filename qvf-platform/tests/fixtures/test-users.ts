@@ -8,6 +8,7 @@ export interface TestUser {
   password: string;
   role: string;
   fullName: string;
+  full_name: string; // Added for compatibility
   permissions: string[];
   defaultRoute: string;
 }
@@ -18,6 +19,7 @@ export const TestUsers = {
     password: 'executive123',
     role: 'executive',
     fullName: 'Executive User',
+    full_name: 'Executive User',
     permissions: ['view_portfolio', 'view_analytics', 'view_executive_dashboard'],
     defaultRoute: '/dashboard/executive'
   } as TestUser,
@@ -27,6 +29,7 @@ export const TestUsers = {
     password: 'po123',
     role: 'product_owner', 
     fullName: 'Product Owner',
+    full_name: 'Product Owner',
     permissions: ['manage_epics', 'view_planning', 'view_analytics', 'manage_backlog'],
     defaultRoute: '/dashboard/product-owner'
   } as TestUser,
@@ -36,6 +39,7 @@ export const TestUsers = {
     password: 'sm123',
     role: 'scrum_master',
     fullName: 'Scrum Master',
+    full_name: 'Scrum Master',
     permissions: ['manage_sprints', 'view_team_metrics', 'view_analytics', 'manage_impediments'],
     defaultRoute: '/dashboard/scrum-master'
   } as TestUser,
@@ -45,6 +49,7 @@ export const TestUsers = {
     password: 'dev123',
     role: 'developer',
     fullName: 'Developer User',
+    full_name: 'Developer User',
     permissions: ['view_work_items', 'update_tasks', 'view_team_dashboard'],
     defaultRoute: '/work-items'
   } as TestUser,

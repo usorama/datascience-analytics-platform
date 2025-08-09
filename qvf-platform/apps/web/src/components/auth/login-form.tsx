@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2 } from 'lucide-react'
 import { useAuthStore } from '@/lib/auth'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -71,6 +72,11 @@ export function LoginForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
+      {/* Theme Toggle - Positioned in top right */}
+      <div className="fixed top-4 right-4 z-10">
+        <ThemeToggle size="default" variant="outline" />
+      </div>
+      
       <div className="max-w-md w-full space-y-8">
         <Card>
           <CardHeader>

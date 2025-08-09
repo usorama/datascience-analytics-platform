@@ -27,6 +27,8 @@ import { QVFScoringInterface } from './qvf-scoring-interface'
 import { BulkOperations } from './bulk-operations'
 import { WorkItemFilters } from './work-item-filters'
 import { ExportDialog } from './export-dialog'
+import { DraggableWorkItemList } from './draggable-work-item-list'
+import { ExportService } from '@/lib/export-service'
 
 interface ExtendedWorkItem extends WorkItem {
   qvf_score?: number
@@ -36,6 +38,7 @@ interface ExtendedWorkItem extends WorkItem {
   work_item_type?: string
   dependencies?: string[]
   risk_level: number
+  order_index?: number
 }
 
 interface WorkItemFilters {
@@ -55,7 +58,7 @@ export function WorkItemManagement() {
   const [isEditing, setIsEditing] = useState<string | null>(null)
   const [showFilters, setShowFilters] = useState(false)
   const [showExport, setShowExport] = useState(false)
-  const [activeView, setActiveView] = useState<'hierarchy' | 'list' | 'scoring'>('hierarchy')
+  const [activeView, setActiveView] = useState<'hierarchy' | 'list' | 'scoring' | 'prioritization'>('hierarchy')
   
   const [filters, setFilters] = useState<WorkItemFilters>({
     search: '',
@@ -88,7 +91,7 @@ export function WorkItemManagement() {
         work_items: sampleWorkItems
       })
       
-      // Merge QVF scores with work items
+      // Merge QVF scores with work items and add order_index
       const itemsWithScores = sampleWorkItems.map(item => {
         const scoreData = qvfResponse.scores.find(score => score.work_item_id === item.id)
         return {
@@ -98,7 +101,12 @@ export function WorkItemManagement() {
         }
       })
       
-      setWorkItems(itemsWithScores)
+      // Sort by QVF score and add order indices
+      const itemsWithOrder = itemsWithScores
+        .sort((a, b) => (b.qvf_score || 0) - (a.qvf_score || 0))
+        .map((item, index) => ({ ...item, order_index: index }))
+      
+      setWorkItems(itemsWithOrder)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load work items')
     } finally {
@@ -304,9 +312,38 @@ export function WorkItemManagement() {
     }
   }
 
-  const handleExport = (format: 'pdf' | 'excel', items: ExtendedWorkItem[]) => {
-    // Export functionality would be implemented here
-    console.log(`Exporting ${items.length} items as ${format}`)
+  const handleItemsReorder = (newItems: ExtendedWorkItem[]) => {
+    setWorkItems(newItems)
+  }
+
+  const handleQvfScoreUpdate = (itemId: string, newScore: number) => {
+    setWorkItems(prev => prev.map(item => 
+      item.id === itemId 
+        ? { ...item, qvf_score: newScore }
+        : item
+    ))
+  }
+
+  const handleExport = async (format: 'pdf' | 'excel' | 'csv', items: ExtendedWorkItem[]) => {
+    try {
+      switch (format) {
+        case 'pdf':
+          await ExportService.exportToPDF(items)
+          break
+        case 'excel':
+          await ExportService.exportToExcel(items)
+          break
+        case 'csv':
+          await ExportService.exportToCSV(items)
+          break
+        default:
+          throw new Error(`Unsupported export format: ${format}`)
+      }
+    } catch (error) {
+      console.error('Export failed:', error)
+      // You might want to show a toast notification here
+      throw error // Re-throw to let the dialog handle the error state
+    }
   }
 
   if (loading) {
@@ -405,8 +442,9 @@ export function WorkItemManagement() {
 
       {/* Main Content */}
       <Tabs value={activeView} onValueChange={(value) => setActiveView(value as any)}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="hierarchy">Hierarchy View</TabsTrigger>
+          <TabsTrigger value="prioritization">🎯 Drag & Drop Priority</TabsTrigger>
           <TabsTrigger value="list">List View</TabsTrigger>
           <TabsTrigger value="scoring">QVF Scoring</TabsTrigger>
         </TabsList>
@@ -419,6 +457,23 @@ export function WorkItemManagement() {
             onEdit={handleEditWorkItem}
             onDelete={handleDeleteWorkItem}
             onCreate={handleCreateWorkItem}
+          />
+        </TabsContent>
+        
+        <TabsContent value="prioritization" className="space-y-4">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold mb-2">Drag & Drop Prioritization</h3>
+            <p className="text-sm text-muted-foreground">
+              Drag work items to reorder them by priority. Higher position means higher priority. 
+              QVF scores will be recalculated automatically based on the new order.
+            </p>
+          </div>
+          
+          <DraggableWorkItemList
+            workItems={filteredItems}
+            onItemsReorder={handleItemsReorder}
+            onQvfScoreUpdate={handleQvfScoreUpdate}
+            disabled={loading}
           />
         </TabsContent>
         

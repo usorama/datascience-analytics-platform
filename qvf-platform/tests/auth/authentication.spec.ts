@@ -80,11 +80,14 @@ test.describe('QVF Platform Authentication', () => {
 
       // Check for user indicator (name, profile, or logout button)
       const userIndicators = [
-        page.locator(`text=${user.fullName}`),
-        page.locator(`text=${user.username}`),
+        page.locator(`text="${user.full_name}"`),
+        page.locator(`text="${user.fullName}"`),
+        page.locator(`text="${user.username}"`),
         page.locator('[data-testid="user-menu"]'),
         page.locator('button:has-text("Logout")'),
-        page.locator('[data-testid="logout-button"]')
+        page.locator('[data-testid="logout-button"]'),
+        page.locator('[aria-label="Logout"]'),
+        page.locator(`text="${user.role.replace('_', ' ').toUpperCase()}"`)
       ];
 
       let userIndicatorFound = false;

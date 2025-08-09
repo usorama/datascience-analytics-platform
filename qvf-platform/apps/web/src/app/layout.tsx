@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/components/providers/auth-provider'
 import { QueryProvider } from '@/components/providers/query-provider'
+import { ThemeProvider } from '@/components/providers/theme-provider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -17,15 +18,22 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <QueryProvider>
-          <AuthProvider>
-            <div className="min-h-screen bg-background">
-              {children}
-            </div>
-          </AuthProvider>
-        </QueryProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <QueryProvider>
+            <AuthProvider>
+              <div className="min-h-screen bg-background">
+                {children}
+              </div>
+            </AuthProvider>
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
